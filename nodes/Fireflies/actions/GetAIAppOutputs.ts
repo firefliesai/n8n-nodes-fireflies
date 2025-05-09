@@ -1,5 +1,5 @@
 import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
-import axios from 'axios';
+import { callGraphQLApi } from '../transport';
 import { getAIAppOutputsQuery } from '../helpers/queries';
 
 export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
@@ -9,24 +9,12 @@ export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number,
   const limit = returnAll ? null : this.getNodeParameter('limit', i, 10) as number;
   const skip = this.getNodeParameter('skip', i, 0) as number;
 
-  const response = await axios.post(
-    'https://api.fireflies.ai/graphql',
-    {
-      query: getAIAppOutputsQuery,
-      variables: {
-        appId: appId || undefined,
-        transcriptId: transcriptId || undefined,
-        skip,
-        limit: limit || undefined,
-      },
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const response = await callGraphQLApi(apiKey, getAIAppOutputsQuery, {
+    appId: appId || undefined,
+    transcriptId: transcriptId || undefined,
+    skip,
+    limit: limit || undefined,
+  });
 
   return { json: response.data.data.apps.outputs };
 }
