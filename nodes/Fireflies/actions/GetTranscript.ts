@@ -7,5 +7,5 @@ export async function executeGetTranscript(this: IExecuteFunctions, i: number, a
 
 	const response = await callGraphQLApi(apiKey, getTranscriptQuery, { transcriptId });
 
-	return { json: response.data.data.transcript };
+	return { json: response.transcript };
 }

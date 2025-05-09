@@ -122,7 +122,7 @@ export const getTranscriptAnalyticsQuery = `
 export const getTranscriptQuery = `
   query Transcript($transcriptId: String!) {
     transcript(id: $transcriptId) {
-      id
+       id
       sentences {
         index
         speaker_name
@@ -207,6 +207,27 @@ export const getTranscriptQuery = `
       cal_id
       calendar_type
       meeting_link
+    }
+  }
+`;
+
+export const getCurrentUserQuery = `
+  query CurrentUser {
+    user {
+      user_id
+      email
+      name
+      is_admin
+      integrations
+      user_groups {
+        name
+        handle
+        id
+      }
+      num_transcripts
+      recent_transcript
+      recent_meeting
+      minutes_consumed
     }
   }
 `;

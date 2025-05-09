@@ -7,5 +7,5 @@ export async function executeGetTranscriptSummary(this: IExecuteFunctions, i: nu
 
     const response = await callGraphQLApi(apiKey, getMeetingSummaryQuery, { transcriptId });
 
-    return { json: response.data.data.transcript };
+    return { json: response.transcript };
 }

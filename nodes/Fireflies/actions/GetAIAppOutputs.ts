@@ -16,7 +16,7 @@ export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number,
     limit: limit || undefined,
   });
 
-  return { json: response.data.data.apps.outputs };
+  return { json: response.apps.outputs };
 }
 
 export const GetAIAppOutputsProperties: INodeProperties[] = [

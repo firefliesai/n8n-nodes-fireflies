@@ -31,7 +31,7 @@ export async function executeGetTranscriptsList(this: IExecuteFunctions, i: numb
 
 	const response = await callGraphQLApi(apiKey, getTranscriptsListQuery, variables);
 
-	return { json: response.data.data.transcripts };
+	return { json: response.transcripts };
 }
 
 export const GetTranscriptsListProperties: INodeProperties[] = [

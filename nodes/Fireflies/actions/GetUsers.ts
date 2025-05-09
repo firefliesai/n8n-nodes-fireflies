@@ -5,5 +5,5 @@ import { getUsersQuery } from '../helpers/queries';
 export async function executeGetUsers(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
   const response = await callGraphQLApi(apiKey, getUsersQuery, {});
 
-  return { json: response.data.data.users };
+  return { json: response.users };
 }

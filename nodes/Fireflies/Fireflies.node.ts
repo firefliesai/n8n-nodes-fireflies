@@ -1,12 +1,12 @@
 import { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
-import { executeGetTranscript } from './operations/GetTranscript';
-import { executeUploadAudio, UploadAudioProperties } from './operations/UploadAudio';
-import { executeGetTranscriptAnalytics } from './operations/GetTranscriptAnalytics';
-import { executeGetTranscriptSummary } from './operations/GetTranscriptSummary';
-import { executeGetTranscriptsList, GetTranscriptsListProperties } from './operations/GetTranscriptsList';
-import { executeGetAIAppOutputs, GetAIAppOutputsProperties } from './operations/GetAIAppOutputs';
-import { executeGetUsers } from './operations/GetUsers';
-
+import { executeGetTranscript } from './actions/GetTranscript';
+import { executeUploadAudio, UploadAudioProperties } from './actions/UploadAudio';
+import { executeGetTranscriptAnalytics } from './actions/GetTranscriptAnalytics';
+import { executeGetTranscriptSummary } from './actions/GetTranscriptSummary';
+import { executeGetTranscriptsList, GetTranscriptsListProperties } from './actions/GetTranscriptsList';
+import { executeGetAIAppOutputs, GetAIAppOutputsProperties } from './actions/GetAIAppOutputs';
+import { executeGetUsers } from './actions/GetUsers';
+import { executeGetCurrentUser } from './actions/GetCurrentUser';
 export class Fireflies implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Fireflies',
@@ -36,6 +36,11 @@ export class Fireflies implements INodeType {
 						name: 'Get AI App Outputs',
 						value: 'getAIAppOutputs',
 						action: 'Get AI app outputs',
+					},
+					{
+						name: 'Get Current User',
+						value: 'getCurrentUser',
+						action: 'Get current user',
 					},
 					{
 						name: 'Get Transcript',
@@ -79,7 +84,7 @@ export class Fireflies implements INodeType {
 				default: '',
 				displayOptions: {
 					show: {
-						operation: ['getTranscript', 'getMeetingAnalytics', 'getMeetingSummary'],
+						operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary'],
 					},
 				},
 			},
@@ -113,7 +118,10 @@ export class Fireflies implements INodeType {
 					returnData.push(await executeGetAIAppOutputs.call(this, i, apiKey));
 				} else if (operation === 'getUsers') {
 					returnData.push(await executeGetUsers.call(this, i, apiKey));
+				} else if (operation === 'getCurrentUser') {
+					returnData.push(await executeGetCurrentUser.call(this, i, apiKey));
 				}
+				this.logger.info(JSON.stringify(returnData));
 			} catch (error) {
 				this.logger.info(JSON.stringify(error));
 				if (this.continueOnFail()) {

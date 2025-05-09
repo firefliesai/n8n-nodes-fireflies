@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-export async function callGraphQLApi(apiKey: string, query: string, variables: Record<string, any>) {
+export async function callGraphQLApi(apiKey: string, query: string, variables?: Record<string, any>) {
   const response = await axios.post(
-    'http://api.fireflies.ai/graphql',
+    'https://api.fireflies.ai/graphql',
     {
       query,
-      variables,
+      ...(variables && { variables }),
     },
     {
       headers: {
@@ -15,5 +15,5 @@ export async function callGraphQLApi(apiKey: string, query: string, variables: R
     }
   );
 
-  return response.data;
+  return response.data.data;
 } 

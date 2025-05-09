@@ -46,7 +46,7 @@ export async function executeUploadAudio(this: IExecuteFunctions, i: number, api
 
   const response = await callGraphQLApi(apiKey, uploadAudioMutation, { input });
 
-  return { json: response.data.data.uploadAudio };
+  return { json: response.uploadAudio };
 }
 
 export const UploadAudioProperties: INodeProperties[] = [
