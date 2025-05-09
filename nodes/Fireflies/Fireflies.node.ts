@@ -4,6 +4,8 @@ import { executeUploadAudio, UploadAudioProperties } from './operations/UploadAu
 import { executeGetMeetingAnalytics } from './operations/GetMeetingAnalytics';
 import { executeGetMeetingSummary } from './operations/GetMeetingSummary';
 import { executeGetTranscriptsList, GetTranscriptsListProperties } from './operations/GetTranscriptsList';
+import { executeGetAIAppOutputs, GetAIAppOutputsProperties } from './operations/GetAIAppOutputs';
+import { executeGetUsers } from './operations/GetUsers';
 
 export class Fireflies implements INodeType {
 	description: INodeTypeDescription = {
@@ -31,6 +33,11 @@ export class Fireflies implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Get AI App Outputs',
+						value: 'getAIAppOutputs',
+						action: 'Get AI app outputs',
+					},
+					{
 						name: 'Get Meeting Analytics',
 						value: 'getMeetingAnalytics',
 						action: 'Get meeting analytics',
@@ -40,16 +47,23 @@ export class Fireflies implements INodeType {
 						value: 'getMeetingSummary',
 						action: 'Get meeting summary',
 					},
+
 					{
 						name: 'Get Transcript',
 						value: 'getTranscript',
 						description: 'Fetch a transcript by ID',
 						action: 'Fetch a transcript by ID',
 					},
+					
 					{
 						name: 'Get Transcripts List',
 						value: 'getTranscriptsList',
 						action: 'Get transcripts list',
+					},
+					{
+						name: 'Get Users',
+						value: 'getUsers',
+						action: 'Get users',
 					},
 					{
 						name: 'Upload Audio',
@@ -71,6 +85,7 @@ export class Fireflies implements INodeType {
 					},
 				},
 			},
+			...GetAIAppOutputsProperties,
 			...UploadAudioProperties,
 			...GetTranscriptsListProperties,
 		],
@@ -96,6 +111,10 @@ export class Fireflies implements INodeType {
 					returnData.push(await executeGetMeetingSummary.call(this, i, apiKey));
 				} else if (operation === 'getTranscriptsList') {
 					returnData.push(await executeGetTranscriptsList.call(this, i, apiKey));
+				} else if (operation === 'getAIAppOutputs') {
+					returnData.push(await executeGetAIAppOutputs.call(this, i, apiKey));
+				} else if (operation === 'getUsers') {
+					returnData.push(await executeGetUsers.call(this, i, apiKey));
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
