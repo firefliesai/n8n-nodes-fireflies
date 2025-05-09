@@ -1,8 +1,8 @@
 import { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 import { executeGetTranscript } from './operations/GetTranscript';
 import { executeUploadAudio, UploadAudioProperties } from './operations/UploadAudio';
-import { executeGetMeetingAnalytics } from './operations/GetMeetingAnalytics';
-import { executeGetMeetingSummary } from './operations/GetMeetingSummary';
+import { executeGetTranscriptAnalytics } from './operations/GetTranscriptAnalytics';
+import { executeGetTranscriptSummary } from './operations/GetTranscriptSummary';
 import { executeGetTranscriptsList, GetTranscriptsListProperties } from './operations/GetTranscriptsList';
 import { executeGetAIAppOutputs, GetAIAppOutputsProperties } from './operations/GetAIAppOutputs';
 import { executeGetUsers } from './operations/GetUsers';
@@ -38,23 +38,21 @@ export class Fireflies implements INodeType {
 						action: 'Get AI app outputs',
 					},
 					{
-						name: 'Get Meeting Analytics',
-						value: 'getMeetingAnalytics',
-						action: 'Get meeting analytics',
-					},
-					{
-						name: 'Get Meeting Summary',
-						value: 'getMeetingSummary',
-						action: 'Get meeting summary',
-					},
-
-					{
 						name: 'Get Transcript',
 						value: 'getTranscript',
 						description: 'Fetch a transcript by ID',
 						action: 'Fetch a transcript by ID',
 					},
-					
+					{
+						name: 'Get Transcript Analytics',
+						value: 'getTranscriptAnalytics',
+						action: 'Get transcript analytics',
+					},
+					{
+						name: 'Get Transcript Summary',
+						value: 'getTranscriptSummary',
+						action: 'Get transcript summary',
+					},
 					{
 						name: 'Get Transcripts List',
 						value: 'getTranscriptsList',
@@ -105,10 +103,10 @@ export class Fireflies implements INodeType {
 					returnData.push(await executeGetTranscript.call(this, i, apiKey));
 				} else if (operation === 'uploadAudio') {
 					returnData.push(await executeUploadAudio.call(this, i, apiKey));
-				} else if (operation === 'getMeetingAnalytics') {
-					returnData.push(await executeGetMeetingAnalytics.call(this, i, apiKey));
-				} else if (operation === 'getMeetingSummary') {
-					returnData.push(await executeGetMeetingSummary.call(this, i, apiKey));
+				} else if (operation === 'getTranscriptAnalytics') {
+					returnData.push(await executeGetTranscriptAnalytics.call(this, i, apiKey));
+				} else if (operation === 'getTranscriptSummary') {
+					returnData.push(await executeGetTranscriptSummary.call(this, i, apiKey));
 				} else if (operation === 'getTranscriptsList') {
 					returnData.push(await executeGetTranscriptsList.call(this, i, apiKey));
 				} else if (operation === 'getAIAppOutputs') {
@@ -117,6 +115,7 @@ export class Fireflies implements INodeType {
 					returnData.push(await executeGetUsers.call(this, i, apiKey));
 				}
 			} catch (error) {
+				this.logger.info(JSON.stringify(error));
 				if (this.continueOnFail()) {
 					returnData.push({ json: { error: error.message }, pairedItem: i });
 					continue;

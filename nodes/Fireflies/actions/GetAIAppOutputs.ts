@@ -1,5 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
 import axios from 'axios';
+import { getAIAppOutputsQuery } from '../helpers/queries';
 
 export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
   const appId = this.getNodeParameter('appId', i, '') as string;
@@ -11,21 +12,7 @@ export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number,
   const response = await axios.post(
     'https://api.fireflies.ai/graphql',
     {
-      query: `
-        query Apps($appId: String, $transcriptId: String, $skip: Float, $limit: Float) {
-          apps(app_id: $appId, transcript_id: $transcriptId, skip: $skip, limit: $limit) {
-            outputs {
-              transcript_id
-              user_id
-              app_id
-              created_at
-              title
-              prompt
-              response
-            }
-          }
-        }
-      `,
+      query: getAIAppOutputsQuery,
       variables: {
         appId: appId || undefined,
         transcriptId: transcriptId || undefined,
