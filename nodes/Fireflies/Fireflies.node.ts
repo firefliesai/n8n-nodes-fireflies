@@ -1,6 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 import { executeGetTranscript } from './operations/GetTranscript';
-import { executeUploadAudio } from './operations/UploadAudio';
+import { executeUploadAudio, UploadAudioProperties } from './operations/UploadAudio';
 import { executeGetMeetingAnalytics } from './operations/GetMeetingAnalytics';
 import { executeGetMeetingSummary } from './operations/GetMeetingSummary';
 import { executeGetTranscriptsList, GetTranscriptsListProperties } from './operations/GetTranscriptsList';
@@ -71,28 +71,7 @@ export class Fireflies implements INodeType {
 					},
 				},
 			},
-			{
-				displayName: 'Audio URL',
-				name: 'url',
-				type: 'string',
-				default: '',
-				displayOptions: {
-					show: {
-						operation: ['uploadAudio'],
-					},
-				},
-			},
-			{
-				displayName: 'Audio Title',
-				name: 'title',
-				type: 'string',
-				default: '',
-				displayOptions: {
-					show: {
-						operation: ['uploadAudio'],
-					},
-				},
-			},
+			...UploadAudioProperties,
 			...GetTranscriptsListProperties,
 		],
 	};
