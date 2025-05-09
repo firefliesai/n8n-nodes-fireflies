@@ -5,7 +5,7 @@ export async function executeGetTranscript(this: IExecuteFunctions, i: number, a
 	const transcriptId = this.getNodeParameter('transcriptId', i) as string;
 
 	const response = await axios.post(
-		'http://127.0.0.1:3001/graphql',
+		'http://api.fireflies.ai/graphql',
 		{
 			query: `
         query Transcript($transcriptId: String!) {
