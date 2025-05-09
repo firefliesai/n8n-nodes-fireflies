@@ -121,9 +121,7 @@ export class Fireflies implements INodeType {
 				} else if (operation === 'getCurrentUser') {
 					returnData.push(await executeGetCurrentUser.call(this, i, apiKey));
 				}
-				this.logger.info(JSON.stringify(returnData));
 			} catch (error) {
-				this.logger.info(JSON.stringify(error));
 				if (this.continueOnFail()) {
 					returnData.push({ json: { error: error.message }, pairedItem: i });
 					continue;
