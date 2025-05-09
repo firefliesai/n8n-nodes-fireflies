@@ -1,46 +1,49 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# Fireflies Node for n8n
 
-# n8n-nodes-starter
+This node allows you to interact with the [Fireflies.ai](https://fireflies.ai) API, enabling you to automate tasks related to meeting transcriptions, analytics, and more.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](n8n.io). It includes the node linter and other dependencies.
+## Operations
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+The Fireflies node supports the following operations:
+
+- **Get AI App Outputs**: Retrieve outputs from AI applications integrated with Fireflies
+- **Get Meeting Analytics**: Fetch analytics data for a specific meeting transcript
+- **Get Meeting Summary**: Get a summary of a meeting transcript
+- **Get Transcript**: Fetch a complete transcript by ID
+- **Get Transcripts List**: Retrieve a list of available transcripts
+- **Get Users**: Get information about users in your Fireflies organization
+- **Upload Audio**: Upload an audio file for transcription
 
 ## Prerequisites
 
-You need the following installed on your development machine:
+- You need a Fireflies.ai account
+- You need to obtain an API key from your Fireflies account settings
 
-* [git](https://git-scm.com/downloads)
-* Node.js and pnpm. Minimum version Node 18. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  pnpm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+## Authentication
 
-## Using this starter
+This node uses API Key authentication. To obtain your API key:
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+1. Log in to your Fireflies.ai account
+2. Go to Settings > API
+3. Generate or copy your existing API key
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `pnpm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `pnpm lint` to check for errors or `pnpm lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+## Example Usage
 
-## More information
+### Get a Transcript
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+1. Add a Fireflies node to your workflow
+2. Select the "Get Transcript" operation
+3. Enter the Transcript ID
+4. Execute the workflow to retrieve the complete transcript data
 
-## License
+### Upload Audio for Transcription
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+1. Add a Fireflies node to your workflow
+2. Select the "Upload Audio" operation
+3. Configure the required parameters (title, audio file, etc.)
+4. Execute the workflow to upload and transcribe the audio file
+
+## Additional Resources
+
+- [Fireflies API Documentation](https://docs.fireflies.ai)
+- [n8n Documentation](https://docs.n8n.io)
