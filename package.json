@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "description": "",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n-nodes-fireflies",
+    "fireflies",
+    "fireflies api",
+    "fireflies node"
   ],
   "license": "MIT",
   "homepage": "",
