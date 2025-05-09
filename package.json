@@ -50,8 +50,5 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
-  },
-  "dependencies": {
-    "gql.tada": "^1.8.10"
   }
 }
