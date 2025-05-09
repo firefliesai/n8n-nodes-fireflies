@@ -12,6 +12,7 @@ export class Fireflies implements INodeType {
 		displayName: 'Fireflies',
 		name: 'fireflies',
 		group: ['transform'],
+		icon: 'file:fireflies.svg',
 		version: 1,
 		description: 'Interact with the Fireflies.ai API',
 		defaults: {
