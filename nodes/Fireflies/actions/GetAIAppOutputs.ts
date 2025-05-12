@@ -2,7 +2,7 @@ import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-work
 import { callGraphQLApi } from '../transport';
 import { getAIAppOutputsQuery } from '../helpers/queries';
 
-export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
+export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData[]> {
   const appId = this.getNodeParameter('appId', i, '') as string;
   const transcriptId = this.getNodeParameter('transcriptId', i, '') as string;
   const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
@@ -16,7 +16,7 @@ export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number,
     limit: limit || undefined,
   });
 
-  return { json: response.apps.outputs };
+  return response.apps.outputs.map((output: any) => ({ json: output }));
 }
 
 export const GetAIAppOutputsProperties: INodeProperties[] = [

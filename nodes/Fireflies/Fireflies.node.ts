@@ -107,11 +107,14 @@ export class Fireflies implements INodeType {
 				} else if (operation === 'getTranscriptSummary') {
 					returnData.push(await actions.executeGetTranscriptSummary.call(this, i, apiKey));
 				} else if (operation === 'getTranscriptsList') {
-					returnData.push(await actions.executeGetTranscriptsList.call(this, i, apiKey));
+					const transcripts = await actions.executeGetTranscriptsList.call(this, i, apiKey);
+					returnData.push(...transcripts);
 				} else if (operation === 'getAIAppOutputs') {
-					returnData.push(await actions.executeGetAIAppOutputs.call(this, i, apiKey));
+					const outputs = await actions.executeGetAIAppOutputs.call(this, i, apiKey);
+					returnData.push(...outputs);
 				} else if (operation === 'getUsers') {
-					returnData.push(await actions.executeGetUsers.call(this, i, apiKey));
+					const users = await actions.executeGetUsers.call(this, i, apiKey);
+					returnData.push(...users);
 				} else if (operation === 'getCurrentUser') {
 					returnData.push(await actions.executeGetCurrentUser.call(this, i, apiKey));
 				}

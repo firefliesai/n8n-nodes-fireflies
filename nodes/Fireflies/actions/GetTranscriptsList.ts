@@ -2,7 +2,7 @@ import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-work
 import { callGraphQLApi } from '../transport';
 import { getTranscriptsListQuery } from '../helpers/queries';
 
-export async function executeGetTranscriptsList(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
+export async function executeGetTranscriptsList(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData[]> {
 	const title = this.getNodeParameter('title', i, '') as string;
 	const date = this.getNodeParameter('date', i, null) as number | null;
 	const fromDate = this.getNodeParameter('fromDate', i, '') as string;
@@ -31,7 +31,7 @@ export async function executeGetTranscriptsList(this: IExecuteFunctions, i: numb
 
 	const response = await callGraphQLApi(apiKey, getTranscriptsListQuery, variables);
 
-	return { json: response.transcripts };
+	return response.transcripts.map((transcript: any) => ({ json: transcript }));
 }
 
 export const GetTranscriptsListProperties: INodeProperties[] = [
