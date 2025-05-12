@@ -1,12 +1,5 @@
 import { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
-import { executeGetTranscript } from './actions/GetTranscript';
-import { executeUploadAudio, UploadAudioProperties } from './actions/UploadAudio';
-import { executeGetTranscriptAnalytics } from './actions/GetTranscriptAnalytics';
-import { executeGetTranscriptSummary } from './actions/GetTranscriptSummary';
-import { executeGetTranscriptsList, GetTranscriptsListProperties } from './actions/GetTranscriptsList';
-import { executeGetAIAppOutputs, GetAIAppOutputsProperties } from './actions/GetAIAppOutputs';
-import { executeGetUsers } from './actions/GetUsers';
-import { executeGetCurrentUser } from './actions/GetCurrentUser';
+import * as actions from './actions';
 export class Fireflies implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Fireflies',
@@ -89,9 +82,9 @@ export class Fireflies implements INodeType {
 					},
 				},
 			},
-			...GetAIAppOutputsProperties,
-			...UploadAudioProperties,
-			...GetTranscriptsListProperties,
+			...actions.GetAIAppOutputsProperties,
+			...actions.UploadAudioProperties,
+			...actions.GetTranscriptsListProperties,
 		],
 	};
 
@@ -106,21 +99,21 @@ export class Fireflies implements INodeType {
 
 			try {
 				if (operation === 'getTranscript') {
-					returnData.push(await executeGetTranscript.call(this, i, apiKey));
+					returnData.push(await actions.executeGetTranscript.call(this, i, apiKey));
 				} else if (operation === 'uploadAudio') {
-					returnData.push(await executeUploadAudio.call(this, i, apiKey));
+					returnData.push(await actions.executeUploadAudio.call(this, i, apiKey));
 				} else if (operation === 'getTranscriptAnalytics') {
-					returnData.push(await executeGetTranscriptAnalytics.call(this, i, apiKey));
+					returnData.push(await actions.executeGetTranscriptAnalytics.call(this, i, apiKey));
 				} else if (operation === 'getTranscriptSummary') {
-					returnData.push(await executeGetTranscriptSummary.call(this, i, apiKey));
+					returnData.push(await actions.executeGetTranscriptSummary.call(this, i, apiKey));
 				} else if (operation === 'getTranscriptsList') {
-					returnData.push(await executeGetTranscriptsList.call(this, i, apiKey));
+					returnData.push(await actions.executeGetTranscriptsList.call(this, i, apiKey));
 				} else if (operation === 'getAIAppOutputs') {
-					returnData.push(await executeGetAIAppOutputs.call(this, i, apiKey));
+					returnData.push(await actions.executeGetAIAppOutputs.call(this, i, apiKey));
 				} else if (operation === 'getUsers') {
-					returnData.push(await executeGetUsers.call(this, i, apiKey));
+					returnData.push(await actions.executeGetUsers.call(this, i, apiKey));
 				} else if (operation === 'getCurrentUser') {
-					returnData.push(await executeGetCurrentUser.call(this, i, apiKey));
+					returnData.push(await actions.executeGetCurrentUser.call(this, i, apiKey));
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
