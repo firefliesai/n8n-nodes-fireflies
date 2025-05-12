@@ -1,35 +1,52 @@
 import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
-import axios from 'axios';
+import { callGraphQLApi } from '../transport';
+import { uploadAudioMutation } from '../helpers/queries';
 
 export async function executeUploadAudio(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
   const url = this.getNodeParameter('url', i) as string;
   const title = this.getNodeParameter('title', i) as string;
 
-  const response = await axios.post(
-    'https://api.fireflies.ai/graphql',
-    {
-      query: `
-        mutation UploadAudio($input: AudioUploadInput) {
-          uploadAudio(input: $input) {
-            success
-            title
-            message
-          }
-        }
-      `,
-      variables: {
-        input: { url, title },
-      },
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  const additionalFields = this.getNodeParameter('additionalFields', i, {}) as {
+    attendees?: { attendeeValues: Array<{ displayName: string; email: string; phoneNumber: string }> };
+    client_reference_id?: string;
+    custom_language?: string;
+    save_video?: boolean;
+    webhook?: string;
+  };
 
-  return { json: response.data.data.uploadAudio };
+  const input: Record<string, any> = {
+    url,
+    title,
+  };
+
+  // Add optional fields if they exist
+  if (additionalFields.attendees?.attendeeValues?.length) {
+    input.attendees = additionalFields.attendees.attendeeValues.map(attendee => ({
+      display_name: attendee.displayName,
+      email: attendee.email,
+      phone_number: attendee.phoneNumber,
+    }));
+  }
+
+  if (additionalFields.client_reference_id) {
+    input.client_reference_id = additionalFields.client_reference_id;
+  }
+
+  if (additionalFields.custom_language) {
+    input.custom_language = additionalFields.custom_language;
+  }
+
+  if (additionalFields.save_video !== undefined) {
+    input.save_video = additionalFields.save_video;
+  }
+
+  if (additionalFields.webhook) {
+    input.webhook = additionalFields.webhook;
+  }
+
+  const response = await callGraphQLApi(apiKey, uploadAudioMutation, { input });
+
+  return { json: response.uploadAudio };
 }
 
 export const UploadAudioProperties: INodeProperties[] = [
@@ -39,11 +56,11 @@ export const UploadAudioProperties: INodeProperties[] = [
     type: 'string',
     required: true,
     default: '',
-	displayOptions: {
-		show: {
-			operation: ['uploadAudio'],
-		},
-	},
+    displayOptions: {
+      show: {
+        operation: ['uploadAudio'],
+      },
+    },
     description: 'URL of the audio file to upload',
   },
   {
@@ -51,11 +68,11 @@ export const UploadAudioProperties: INodeProperties[] = [
     name: 'title',
     type: 'string',
     default: '',
-	displayOptions: {
-		show: {
-			operation: ['uploadAudio'],
-		},
-	},
+    displayOptions: {
+      show: {
+        operation: ['uploadAudio'],
+      },
+    },
     description: 'Title of the audio file',
   },
   {
@@ -64,11 +81,11 @@ export const UploadAudioProperties: INodeProperties[] = [
     type: 'collection',
     placeholder: 'Add Field',
     default: {},
-	displayOptions: {
-		show: {
-			operation: ['uploadAudio'],
-		},
-	},
+    displayOptions: {
+      show: {
+        operation: ['uploadAudio'],
+      },
+    },
     options: [
       {
         displayName: 'Attendees',

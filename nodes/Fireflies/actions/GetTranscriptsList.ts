@@ -1,7 +1,8 @@
 import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
-import axios from 'axios';
+import { callGraphQLApi } from '../transport';
+import { getTranscriptsListQuery } from '../helpers/queries';
 
-export async function executeGetTranscriptsList(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
+export async function executeGetTranscriptsList(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData[]> {
 	const title = this.getNodeParameter('title', i, '') as string;
 	const date = this.getNodeParameter('date', i, null) as number | null;
 	const fromDate = this.getNodeParameter('fromDate', i, '') as string;
@@ -28,32 +29,9 @@ export async function executeGetTranscriptsList(this: IExecuteFunctions, i: numb
 	if (userId) variables.userId = userId;
 	if (mine) variables.mine = mine;
 
-	const response = await axios.post(
-		'http://api.fireflies.ai/graphql',
-		{
-			query: `
-				query GetTranscriptsList($title: String, $date: Float, $fromDate: DateTime, $toDate: DateTime, $limit: Int, $skip: Int, $hostEmail: String, $organizerEmail: String, $participantEmail: String, $userId: String, $mine: Boolean) {
-					transcripts(title: $title, date: $date, fromDate: $fromDate, toDate: $toDate, limit: $limit, skip: $skip, host_email: $hostEmail, organizer_email: $organizerEmail, participant_email: $participantEmail, user_id: $userId, mine: $mine) {
-						id
-						title
-						organizer_email
-						participants
-						meeting_link
-						dateString
-					}
-				}
-			`,
-			variables,
-		},
-		{
-			headers: {
-				Authorization: `Bearer ${apiKey}`,
-				'Content-Type': 'application/json',
-			},
-		}
-	);
+	const response = await callGraphQLApi(apiKey, getTranscriptsListQuery, variables);
 
-	return { json: response.data.data.transcripts };
+	return response.transcripts.map((transcript: any) => ({ json: transcript }));
 }
 
 export const GetTranscriptsListProperties: INodeProperties[] = [

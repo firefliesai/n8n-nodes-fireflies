@@ -1,15 +1,11 @@
 import { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
-import { executeGetTranscript } from './operations/GetTranscript';
-import { executeUploadAudio, UploadAudioProperties } from './operations/UploadAudio';
-import { executeGetMeetingAnalytics } from './operations/GetMeetingAnalytics';
-import { executeGetMeetingSummary } from './operations/GetMeetingSummary';
-import { executeGetTranscriptsList, GetTranscriptsListProperties } from './operations/GetTranscriptsList';
-
+import * as actions from './actions';
 export class Fireflies implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Fireflies',
 		name: 'fireflies',
 		group: ['transform'],
+		icon: 'file:fireflies.svg',
 		version: 1,
 		description: 'Interact with the Fireflies.ai API',
 		defaults: {
@@ -31,14 +27,14 @@ export class Fireflies implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Get Meeting Analytics',
-						value: 'getMeetingAnalytics',
-						action: 'Get meeting analytics',
+						name: 'Get AI App Outputs',
+						value: 'getAIAppOutputs',
+						action: 'Get AI app outputs',
 					},
 					{
-						name: 'Get Meeting Summary',
-						value: 'getMeetingSummary',
-						action: 'Get meeting summary',
+						name: 'Get Current User',
+						value: 'getCurrentUser',
+						action: 'Get current user',
 					},
 					{
 						name: 'Get Transcript',
@@ -47,9 +43,24 @@ export class Fireflies implements INodeType {
 						action: 'Fetch a transcript by ID',
 					},
 					{
+						name: 'Get Transcript Analytics',
+						value: 'getTranscriptAnalytics',
+						action: 'Get transcript analytics',
+					},
+					{
+						name: 'Get Transcript Summary',
+						value: 'getTranscriptSummary',
+						action: 'Get transcript summary',
+					},
+					{
 						name: 'Get Transcripts List',
 						value: 'getTranscriptsList',
 						action: 'Get transcripts list',
+					},
+					{
+						name: 'Get Users',
+						value: 'getUsers',
+						action: 'Get users',
 					},
 					{
 						name: 'Upload Audio',
@@ -67,12 +78,13 @@ export class Fireflies implements INodeType {
 				default: '',
 				displayOptions: {
 					show: {
-						operation: ['getTranscript', 'getMeetingAnalytics', 'getMeetingSummary'],
+						operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary'],
 					},
 				},
 			},
-			...UploadAudioProperties,
-			...GetTranscriptsListProperties,
+			...actions.GetAIAppOutputsProperties,
+			...actions.UploadAudioProperties,
+			...actions.GetTranscriptsListProperties,
 		],
 	};
 
@@ -87,15 +99,24 @@ export class Fireflies implements INodeType {
 
 			try {
 				if (operation === 'getTranscript') {
-					returnData.push(await executeGetTranscript.call(this, i, apiKey));
+					returnData.push(await actions.executeGetTranscript.call(this, i, apiKey));
 				} else if (operation === 'uploadAudio') {
-					returnData.push(await executeUploadAudio.call(this, i, apiKey));
-				} else if (operation === 'getMeetingAnalytics') {
-					returnData.push(await executeGetMeetingAnalytics.call(this, i, apiKey));
-				} else if (operation === 'getMeetingSummary') {
-					returnData.push(await executeGetMeetingSummary.call(this, i, apiKey));
+					returnData.push(await actions.executeUploadAudio.call(this, i, apiKey));
+				} else if (operation === 'getTranscriptAnalytics') {
+					returnData.push(await actions.executeGetTranscriptAnalytics.call(this, i, apiKey));
+				} else if (operation === 'getTranscriptSummary') {
+					returnData.push(await actions.executeGetTranscriptSummary.call(this, i, apiKey));
 				} else if (operation === 'getTranscriptsList') {
-					returnData.push(await executeGetTranscriptsList.call(this, i, apiKey));
+					const transcripts = await actions.executeGetTranscriptsList.call(this, i, apiKey);
+					returnData.push(...transcripts);
+				} else if (operation === 'getAIAppOutputs') {
+					const outputs = await actions.executeGetAIAppOutputs.call(this, i, apiKey);
+					returnData.push(...outputs);
+				} else if (operation === 'getUsers') {
+					const users = await actions.executeGetUsers.call(this, i, apiKey);
+					returnData.push(...users);
+				} else if (operation === 'getCurrentUser') {
+					returnData.push(await actions.executeGetCurrentUser.call(this, i, apiKey));
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
