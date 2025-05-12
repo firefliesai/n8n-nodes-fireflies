@@ -60,8 +60,8 @@ export const getTranscriptsListQuery = `
   }
 `;
 
-export const getMeetingSummaryQuery = `
-  query GetMeetingSummary($transcriptId: String!) {
+export const getTranscriptSummaryQuery = `
+  query GetTranscriptSummary($transcriptId: String!) {
     transcript(id: $transcriptId) {
       summary {
         keywords
