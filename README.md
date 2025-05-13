@@ -21,8 +21,9 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 The Fireflies node supports the following operations:
 
 - **Get AI App Outputs**: Retrieve outputs from AI applications integrated with Fireflies
-- **Get Meeting Analytics**: Fetch analytics data for a specific meeting transcript
-- **Get Meeting Summary**: Get a summary of a meeting transcript
+- **Get Current User**: Retrieve user details of the API key owner
+- **Get Transcript Analytics**: Fetch analytics data for a specific meeting transcript
+- **Get Transcript Summary**: Get a summary of a meeting transcript
 - **Get Transcript**: Fetch a complete transcript by ID
 - **Get Transcripts List**: Retrieve a list of available transcripts
 - **Get Users**: Get information about users in your Fireflies organization

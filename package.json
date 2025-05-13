@@ -1,7 +1,7 @@
 {
-  "name": "n8n-nodes-fireflies",
+  "name": "@firefliesai/n8n-nodes-fireflies",
   "version": "0.1.0",
-  "description": "Fireflies.ai is an AI meeting assistant that automatically records, transcribes, and analyzes your meetings. It integrates with popular video conferencing platforms to help teams capture and search through important meeting content.",
+  "description": "An n8n integration for the Fireflies.ai API that enables workflow automation with meeting transcripts, analytics, summaries, and other conversation data from Fireflies.ai's AI meeting assistant.",
   "keywords": [
     "n8n-community-node-package",
     "n8n-nodes-fireflies",
