@@ -19,7 +19,7 @@
     "type": "git",
     "url": "https://github.com/fireflies-ai/n8n-nodes-fireflies.git"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
