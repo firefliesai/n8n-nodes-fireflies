@@ -37,7 +37,7 @@
       "dist/credentials/FirefliesApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Fireflies/FirefliesNode.node.js"
+      "dist/nodes/Fireflies/Fireflies.node.js"
     ]
   },
   "devDependencies": {
