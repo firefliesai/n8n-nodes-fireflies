@@ -1,15 +1,14 @@
 import {
 	IAuthenticateGeneric,
 	ICredentialType,
+	ICredentialTestRequest,
 	INodeProperties,
 } from 'n8n-workflow';
 
 export class FirefliesApi implements ICredentialType {
 	name = 'firefliesApi';
 	displayName = 'Fireflies API';
-	// Uses the link to this tutorial as an example
-	// Replace with your own docs links when building your own nodes
-	documentationUrl = 'https://docs.n8n.io/integrations/creating-nodes/build/declarative-style-node/';
+	documentationUrl = 'https://fireflies.ai/docs/api';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
@@ -19,14 +18,35 @@ export class FirefliesApi implements ICredentialType {
 				password: true,
 			},
 			default: '',
+			required: true,
 		},
 	];
 	authenticate: IAuthenticateGeneric = {
 		type: 'generic',
 		properties: {
-			qs: {
-				'api_key': '={{$credentials.apiKey}}'
+			headers: {
+				'Authorization': '=Bearer {{$credentials.apiKey}}'
 			}
 		}
+	};
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://api.fireflies.ai/graphql',
+			url: '',
+			method: 'POST',
+			body: {
+				query: `query ValidateCredentials { user { user_id } }`
+			},
+		},
+		rules: [
+			{
+				type: 'responseSuccessBody',
+				properties: {
+					key: 'data.user.user_id',
+					message: 'Invalid API key',
+					value: 'auth_failed'
+				}
+			},
+		]
 	};
 }
