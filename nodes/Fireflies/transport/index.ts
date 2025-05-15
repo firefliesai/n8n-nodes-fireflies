@@ -1,19 +1,14 @@
-import axios from 'axios';
+import { IExecuteFunctions } from 'n8n-workflow';
 
-export async function callGraphQLApi(apiKey: string, query: string, variables?: Record<string, any>) {
-  const response = await axios.post(
-    'https://api.fireflies.ai/graphql',
-    {
+export async function callGraphQLApi(this: IExecuteFunctions, query: string, variables?: Record<string, any>) {
+  const response = await this.helpers.httpRequestWithAuthentication.call(this, 'firefliesApi', {
+    url: 'https://api.fireflies.ai/graphql',
+    method: 'POST',
+    body: {
       query,
       ...(variables && { variables }),
     },
-    {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+  });
 
-  return response.data.data;
+  return response.data;
 } 

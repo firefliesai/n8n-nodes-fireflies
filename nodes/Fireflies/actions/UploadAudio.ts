@@ -2,7 +2,7 @@ import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-work
 import { callGraphQLApi } from '../transport';
 import { uploadAudioMutation } from '../helpers/queries';
 
-export async function executeUploadAudio(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData> {
+export async function executeUploadAudio(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
   const url = this.getNodeParameter('url', i) as string;
   const title = this.getNodeParameter('title', i) as string;
 
@@ -19,7 +19,6 @@ export async function executeUploadAudio(this: IExecuteFunctions, i: number, api
     title,
   };
 
-  // Add optional fields if they exist
   if (additionalFields.attendees?.attendeeValues?.length) {
     input.attendees = additionalFields.attendees.attendeeValues.map(attendee => ({
       display_name: attendee.displayName,
@@ -44,7 +43,7 @@ export async function executeUploadAudio(this: IExecuteFunctions, i: number, api
     input.webhook = additionalFields.webhook;
   }
 
-  const response = await callGraphQLApi(apiKey, uploadAudioMutation, { input });
+  const response = await callGraphQLApi.call(this, uploadAudioMutation, { input });
 
   return { json: response.uploadAudio };
 }
