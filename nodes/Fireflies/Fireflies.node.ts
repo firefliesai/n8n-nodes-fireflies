@@ -1,5 +1,14 @@
-import { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	INodeExecutionData,
+	INodeType,
+	INodeTypeDescription,
+	NodeConnectionType,
+	NodeOperationError,
+} from 'n8n-workflow';
+
 import * as actions from './actions';
+
 export class Fireflies implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Fireflies',
@@ -26,48 +35,14 @@ export class Fireflies implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{
-						name: 'Get AI App Outputs',
-						value: 'getAIAppOutputs',
-						action: 'Get AI app outputs',
-					},
-					{
-						name: 'Get Current User',
-						value: 'getCurrentUser',
-						action: 'Get current user',
-					},
-					{
-						name: 'Get Transcript',
-						value: 'getTranscript',
-						description: 'Fetch a transcript by ID',
-						action: 'Fetch a transcript by ID',
-					},
-					{
-						name: 'Get Transcript Analytics',
-						value: 'getTranscriptAnalytics',
-						action: 'Get transcript analytics',
-					},
-					{
-						name: 'Get Transcript Summary',
-						value: 'getTranscriptSummary',
-						action: 'Get transcript summary',
-					},
-					{
-						name: 'Get Transcripts List',
-						value: 'getTranscriptsList',
-						action: 'Get transcripts list',
-					},
-					{
-						name: 'Get Users',
-						value: 'getUsers',
-						action: 'Get users',
-					},
-					{
-						name: 'Upload Audio',
-						value: 'uploadAudio',
-						description: 'Upload an audio file for transcription',
-						action: 'Upload an audio file for transcription',
-					},
+					{ name: 'Get AI App Outputs', value: 'getAIAppOutputs' },
+					{ name: 'Get Current User', value: 'getCurrentUser' },
+					{ name: 'Get Transcript', value: 'getTranscript' },
+					{ name: 'Get Transcript Analytics', value: 'getTranscriptAnalytics' },
+					{ name: 'Get Transcript Summary', value: 'getTranscriptSummary' },
+					{ name: 'Get Transcripts List', value: 'getTranscriptsList' },
+					{ name: 'Get Users', value: 'getUsers' },
+					{ name: 'Upload Audio', value: 'uploadAudio' },
 				],
 				default: 'getTranscript',
 			},
@@ -92,32 +67,25 @@ export class Fireflies implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
+		const operationHandlers = {
+			getTranscript: actions.executeGetTranscript.bind(this),
+			uploadAudio: actions.executeUploadAudio.bind(this),
+			getTranscriptAnalytics: actions.executeGetTranscriptAnalytics.bind(this),
+			getTranscriptSummary: actions.executeGetTranscriptSummary.bind(this),
+			getTranscriptsList: actions.executeGetTranscriptsList.bind(this),
+			getAIAppOutputs: actions.executeGetAIAppOutputs.bind(this),
+			getUsers: actions.executeGetUsers.bind(this),
+			getCurrentUser: actions.executeGetCurrentUser.bind(this),
+		};
+
 		for (let i = 0; i < items.length; i++) {
-			const operation = this.getNodeParameter('operation', i) as string;
-			const credentials = await this.getCredentials('firefliesApi');
-			const apiKey = credentials.apiKey as string;
+			const operation = this.getNodeParameter('operation', i) as keyof typeof operationHandlers;
+			const handler = operationHandlers[operation];
 
 			try {
-				if (operation === 'getTranscript') {
-					returnData.push(await actions.executeGetTranscript.call(this, i, apiKey));
-				} else if (operation === 'uploadAudio') {
-					returnData.push(await actions.executeUploadAudio.call(this, i, apiKey));
-				} else if (operation === 'getTranscriptAnalytics') {
-					returnData.push(await actions.executeGetTranscriptAnalytics.call(this, i, apiKey));
-				} else if (operation === 'getTranscriptSummary') {
-					returnData.push(await actions.executeGetTranscriptSummary.call(this, i, apiKey));
-				} else if (operation === 'getTranscriptsList') {
-					const transcripts = await actions.executeGetTranscriptsList.call(this, i, apiKey);
-					returnData.push(...transcripts);
-				} else if (operation === 'getAIAppOutputs') {
-					const outputs = await actions.executeGetAIAppOutputs.call(this, i, apiKey);
-					returnData.push(...outputs);
-				} else if (operation === 'getUsers') {
-					const users = await actions.executeGetUsers.call(this, i, apiKey);
-					returnData.push(...users);
-				} else if (operation === 'getCurrentUser') {
-					returnData.push(await actions.executeGetCurrentUser.call(this, i, apiKey));
-				}
+				if (!handler) throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+				const result = await handler(i);
+				returnData.push(...(Array.isArray(result) ? result : [result]));
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({ json: { error: error.message }, pairedItem: i });
