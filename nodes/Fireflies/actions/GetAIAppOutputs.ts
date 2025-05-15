@@ -2,14 +2,14 @@ import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-work
 import { callGraphQLApi } from '../transport';
 import { getAIAppOutputsQuery } from '../helpers/queries';
 
-export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number, apiKey: string): Promise<INodeExecutionData[]> {
+export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
   const appId = this.getNodeParameter('appId', i, '') as string;
   const transcriptId = this.getNodeParameter('transcriptId', i, '') as string;
   const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
   const limit = returnAll ? null : this.getNodeParameter('limit', i, 10) as number;
   const skip = this.getNodeParameter('skip', i, 0) as number;
 
-  const response = await callGraphQLApi(apiKey, getAIAppOutputsQuery, {
+  const response = await callGraphQLApi.call(this, getAIAppOutputsQuery, {
     appId: appId || undefined,
     transcriptId: transcriptId || undefined,
     skip,
