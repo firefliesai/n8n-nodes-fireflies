@@ -1,6 +1,6 @@
 {
   "name": "@firefliesai/n8n-nodes-fireflies",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An n8n integration for the Fireflies.ai API that enables workflow automation with meeting transcripts, analytics, summaries, and other conversation data from Fireflies.ai's AI meeting assistant.",
   "keywords": [
     "n8n-community-node-package",
