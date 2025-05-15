@@ -8,7 +8,7 @@ import {
 export class FirefliesApi implements ICredentialType {
 	name = 'firefliesApi';
 	displayName = 'Fireflies API';
-	documentationUrl = 'https://fireflies.ai/docs/api';
+	documentationUrl = 'https://docs.fireflies.ai';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
