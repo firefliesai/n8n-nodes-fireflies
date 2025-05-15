@@ -90,6 +90,10 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 
 ## Version history
 
+### 1.0.3
+
+- Bump version due to inconsistent build
+
 ### 1.0.2
 
 - Refactored Fireflies Node implementation
