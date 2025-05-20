@@ -44,9 +44,12 @@ export const aiAppFields: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		default: 50,
+		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
+		default: 10,
 		typeOptions: {
 			minValue: 1,
+			// eslint-disable-next-line n8n-nodes-base/node-param-type-options-max-value-present
+			maxValue: 10,
 		},
 		displayOptions: {
 			show: {
