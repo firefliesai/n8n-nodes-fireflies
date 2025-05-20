@@ -1,44 +1,24 @@
-import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
-import { callGraphQLApi } from '../transport';
-import { getTranscriptsListQuery } from '../helpers/queries';
+import { INodeProperties } from 'n8n-workflow';
 
-export async function executeGetTranscriptsList(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
-	const limit = this.getNodeParameter('limit', i, 50) as number;
-	const skip = this.getNodeParameter('skip', i, 0) as number;
+export const transcriptFields: INodeProperties[] = [
+	// Common fields for all transcript operations
 	
-	const filters = this.getNodeParameter('filters', i, {}) as {
-		title?: string;
-		date?: number;
-		fromDate?: string;
-		toDate?: string;
-		hostEmail?: string;
-		organizerEmail?: string;
-		participantEmail?: string;
-		userId?: string;
-		mine?: boolean;
-	};
-
-	const variables: Record<string, any> = {
-		limit,
-		skip,
-	};
-
-	if (filters.title) variables.title = filters.title;
-	if (filters.date !== undefined) variables.date = filters.date;
-	if (filters.fromDate) variables.fromDate = filters.fromDate;
-	if (filters.toDate) variables.toDate = filters.toDate;
-	if (filters.hostEmail) variables.hostEmail = filters.hostEmail;
-	if (filters.organizerEmail) variables.organizerEmail = filters.organizerEmail;
-	if (filters.participantEmail) variables.participantEmail = filters.participantEmail;
-	if (filters.userId) variables.userId = filters.userId;
-	if (filters.mine !== undefined) variables.mine = filters.mine;
-
-	const response = await callGraphQLApi.call(this, getTranscriptsListQuery, variables);
-
-	return response.transcripts.map((transcript: any) => ({ json: transcript }));
-}
-
-export const GetTranscriptsListProperties: INodeProperties[] = [
+	// Fields for specific transcript operations
+	{
+		displayName: 'Transcript ID',
+		name: 'transcriptId',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['transcript'],
+				operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary'],
+			},
+		},
+		description: 'ID of the transcript to operate on',
+	},
+	
+	// GetTranscriptsList operation fields
 	{
 		displayName: 'Limit',
 		name: 'limit',
@@ -50,6 +30,7 @@ export const GetTranscriptsListProperties: INodeProperties[] = [
 		description: 'Max number of results to return',
 		displayOptions: {
 			show: {
+				resource: ['transcript'],
 				operation: ['getTranscriptsList'],
 			},
 		},
@@ -62,6 +43,7 @@ export const GetTranscriptsListProperties: INodeProperties[] = [
 		description: 'Offset for pagination',
 		displayOptions: {
 			show: {
+				resource: ['transcript'],
 				operation: ['getTranscriptsList'],
 			},
 		},
@@ -74,6 +56,7 @@ export const GetTranscriptsListProperties: INodeProperties[] = [
 		default: {},
 		displayOptions: {
 			show: {
+				resource: ['transcript'],
 				operation: ['getTranscriptsList'],
 			},
 		},
@@ -142,4 +125,4 @@ export const GetTranscriptsListProperties: INodeProperties[] = [
 			},
 		],
 	},
-];
+]; 
