@@ -15,14 +15,13 @@ export const getAIAppOutputsQuery = `
 `;
 
 export const uploadAudioMutation = `
-  mutation UploadAudio($input: UploadAudioInput!) {
+  mutation UploadAudio($input: AudioUploadInput) {
     uploadAudio(input: $input) {
-      id
+      success
       title
-      status
-      url
+      message
     }
-  }
+}
 `;
 
 
