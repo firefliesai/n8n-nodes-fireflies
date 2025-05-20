@@ -60,10 +60,15 @@ export const GetAIAppOutputsProperties: INodeProperties[] = [
     displayName: 'Limit',
     name: 'limit',
     type: 'number',
-    default: 50,
-	typeOptions: {
-		minValue: 1,
-	},
+    // GetAIAppOutputs has a max limit of 10
+    // eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
+    default: 10,
+    typeOptions: {
+      minValue: 1,
+      // GetAIAppOutputs has a max limit of 10
+      // eslint-disable-next-line n8n-nodes-base/node-param-type-options-max-value-present
+      maxValue: 10,
+    },
     displayOptions: {
       show: {
         operation: ['getAIAppOutputs'],
