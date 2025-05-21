@@ -44,6 +44,7 @@ export const aiAppFields: INodeProperties[] = [
     displayName: 'Limit',
     name: 'limit',
     type: 'number',
+    // API supports max of 10 results
     // eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
     default: 10,
     typeOptions: {
