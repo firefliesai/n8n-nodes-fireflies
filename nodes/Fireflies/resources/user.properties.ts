@@ -18,8 +18,8 @@ export const userOperations: INodeProperties = {
       value: 'getCurrentUser',
     },
     {
-      name: 'Get Many',
-      action: 'Get many users',
+      name: 'Get List',
+      action: 'Get a list of users',
       description: 'Get a list of users',
       value: 'getUsers',
     },
