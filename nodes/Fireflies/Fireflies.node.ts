@@ -7,7 +7,7 @@ import {
   NodeApiError,
 } from 'n8n-workflow';
 
-import { firefliesNodeProperties } from './properties';
+import { firefliesNodeProperties } from './resources';
 import { resourceOperationsFunctions } from './operations';
 
 export class Fireflies implements INodeType {

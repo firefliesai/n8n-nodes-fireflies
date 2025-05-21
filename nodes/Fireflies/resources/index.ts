@@ -2,10 +2,10 @@ import { INodeProperties } from 'n8n-workflow';
 import { transcriptFields } from './transcript.fields';
 import { aiAppFields } from './aiApp.fields';
 import { audioFields } from './audio.fields';
-import { userOperations } from './user.operations';
-import { transcriptOperations } from './transcript.operations';
-import { aiAppOperations } from './aiApp.operations';
-import { audioOperations } from './audio.operations';
+import { userOperations } from './user.properties';
+import { transcriptOperations } from './transcript.properties';
+import { aiAppOperations } from './aiApp.properties';
+import { audioOperations } from './audio.properties';
 
 const resourcesOptions: INodeProperties = {
   displayName: 'Resource',
