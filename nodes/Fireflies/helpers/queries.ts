@@ -24,7 +24,6 @@ export const uploadAudioMutation = `
 }
 `;
 
-
 export const getUsersQuery = `
   query Users {
     users {

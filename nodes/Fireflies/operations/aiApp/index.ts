@@ -1,5 +1,3 @@
 import { getAIAppOutputs } from './getAIAppOutputs';
 
-export {
-	getAIAppOutputs,
-}; 
+export { getAIAppOutputs };
