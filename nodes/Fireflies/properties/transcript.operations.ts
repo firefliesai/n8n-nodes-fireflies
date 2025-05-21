@@ -20,7 +20,7 @@ export const transcriptOperations: INodeProperties = {
     {
       name: 'Get Analytics',
       action: 'Get analytics of a transcript',
-      description: 'Get analytics data for a transcript',
+      description: 'Get analytics for a transcript',
       value: 'getTranscriptAnalytics',
     },
     {

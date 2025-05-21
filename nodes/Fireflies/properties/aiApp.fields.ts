@@ -65,6 +65,9 @@ export const aiAppFields: INodeProperties[] = [
     name: 'skip',
     type: 'number',
     default: 0,
+    typeOptions: {
+      minValue: 0,
+    },
     displayOptions: {
       show: {
         resource: ['aiApp'],
