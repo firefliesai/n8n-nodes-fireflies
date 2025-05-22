@@ -11,7 +11,7 @@ Fireflies is an AI meeting assistant that automatically records, transcribes, an
 [Usage](#usage)
 [Credentials](#credentials)  
 [Resources](#resources)  
-[Version history](#version-history)  
+[Version history](#version-history)
 
 ## Installation
 
@@ -85,10 +85,14 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 
 ## Resources
 
-* [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-* [Fireflies.ai API documentation](https://docs.fireflies.ai)
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [Fireflies.ai API documentation](https://docs.fireflies.ai)
 
 ## Version history
+
+### 1.0.4
+
+- Major refactor to separate code into resources and operations
 
 ### 1.0.3
 
@@ -108,5 +112,3 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 
 - Added operations Get AI App Outputs, Get Meeting Analytics, Get Meeting Summary, Get Transcript, Get Transcripts List, Get Users, and Upload Audio
 - Initial release of the Fireflies.ai node for n8n
-
-

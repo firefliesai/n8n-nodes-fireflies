@@ -1,54 +1,6 @@
-import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
-import { callGraphQLApi } from '../transport';
-import { uploadAudioMutation } from '../helpers/queries';
+import { INodeProperties } from 'n8n-workflow';
 
-export async function executeUploadAudio(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
-  const url = this.getNodeParameter('url', i) as string;
-  const title = this.getNodeParameter('title', i) as string;
-
-  const additionalFields = this.getNodeParameter('additionalFields', i, {}) as {
-    attendees?: { attendeeValues: Array<{ displayName: string; email: string; phoneNumber: string }> };
-    client_reference_id?: string;
-    custom_language?: string;
-    save_video?: boolean;
-    webhook?: string;
-  };
-
-  const input: Record<string, any> = {
-    url,
-    title,
-  };
-
-  if (additionalFields.attendees?.attendeeValues?.length) {
-    input.attendees = additionalFields.attendees.attendeeValues.map(attendee => ({
-      display_name: attendee.displayName,
-      email: attendee.email,
-      phone_number: attendee.phoneNumber,
-    }));
-  }
-
-  if (additionalFields.client_reference_id) {
-    input.client_reference_id = additionalFields.client_reference_id;
-  }
-
-  if (additionalFields.custom_language) {
-    input.custom_language = additionalFields.custom_language;
-  }
-
-  if (additionalFields.save_video !== undefined) {
-    input.save_video = additionalFields.save_video;
-  }
-
-  if (additionalFields.webhook) {
-    input.webhook = additionalFields.webhook;
-  }
-
-  const response = await callGraphQLApi.call(this, uploadAudioMutation, { input });
-
-  return { json: response.uploadAudio };
-}
-
-export const UploadAudioProperties: INodeProperties[] = [
+export const audioFields: INodeProperties[] = [
   {
     displayName: 'URL',
     name: 'url',
@@ -57,6 +9,7 @@ export const UploadAudioProperties: INodeProperties[] = [
     default: '',
     displayOptions: {
       show: {
+        resource: ['audio'],
         operation: ['uploadAudio'],
       },
     },
@@ -69,6 +22,7 @@ export const UploadAudioProperties: INodeProperties[] = [
     default: '',
     displayOptions: {
       show: {
+        resource: ['audio'],
         operation: ['uploadAudio'],
       },
     },
@@ -82,6 +36,7 @@ export const UploadAudioProperties: INodeProperties[] = [
     default: {},
     displayOptions: {
       show: {
+        resource: ['audio'],
         operation: ['uploadAudio'],
       },
     },
@@ -152,4 +107,4 @@ export const UploadAudioProperties: INodeProperties[] = [
       },
     ],
   },
-]
+];

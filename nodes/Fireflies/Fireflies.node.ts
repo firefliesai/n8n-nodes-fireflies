@@ -1,100 +1,62 @@
 import {
-	IExecuteFunctions,
-	INodeExecutionData,
-	INodeType,
-	INodeTypeDescription,
-	NodeConnectionType,
-	NodeOperationError,
+  IExecuteFunctions,
+  INodeExecutionData,
+  INodeType,
+  INodeTypeDescription,
+  NodeConnectionType,
+  NodeApiError,
 } from 'n8n-workflow';
 
-import * as actions from './actions';
+import { firefliesNodeProperties } from './resources';
+import { resourceOperationsFunctions } from './operations';
 
 export class Fireflies implements INodeType {
-	description: INodeTypeDescription = {
-		displayName: 'Fireflies',
-		name: 'fireflies',
-		group: ['transform'],
-		icon: 'file:fireflies.svg',
-		version: 1,
-		description: 'Interact with the Fireflies.ai API',
-		defaults: {
-			name: 'Fireflies',
-		},
-		inputs: ['main'] as NodeConnectionType[],
-		outputs: ['main'] as NodeConnectionType[],
-		credentials: [
-			{
-				name: 'firefliesApi',
-				required: true,
-			},
-		],
-		properties: [
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				options: [
-					{ name: 'Get AI App Outputs', value: 'getAIAppOutputs' },
-					{ name: 'Get Current User', value: 'getCurrentUser' },
-					{ name: 'Get Transcript', value: 'getTranscript' },
-					{ name: 'Get Transcript Analytics', value: 'getTranscriptAnalytics' },
-					{ name: 'Get Transcript Summary', value: 'getTranscriptSummary' },
-					{ name: 'Get Transcripts List', value: 'getTranscriptsList' },
-					{ name: 'Get Users', value: 'getUsers' },
-					{ name: 'Upload Audio', value: 'uploadAudio' },
-				],
-				default: 'getTranscript',
-			},
-			{
-				displayName: 'Transcript ID',
-				name: 'transcriptId',
-				type: 'string',
-				default: '',
-				displayOptions: {
-					show: {
-						operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary'],
-					},
-				},
-			},
-			...actions.GetAIAppOutputsProperties,
-			...actions.UploadAudioProperties,
-			...actions.GetTranscriptsListProperties,
-		],
-	};
+  description: INodeTypeDescription = {
+    displayName: 'Fireflies',
+    name: 'fireflies',
+    group: ['transform'],
+    icon: 'file:fireflies.svg',
+    version: 1,
+    subtitle: '={{$parameter["operation"]}}',
+    description: 'Interact with the Fireflies.ai API',
+    defaults: {
+      name: 'Fireflies',
+    },
+    inputs: ['main'] as NodeConnectionType[],
+    outputs: ['main'] as NodeConnectionType[],
+    credentials: [
+      {
+        name: 'firefliesApi',
+        required: true,
+      },
+    ],
+    properties: firefliesNodeProperties,
+  };
 
-	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = [];
+  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    const resource = this.getNodeParameter('resource', 0) as string;
+    const operation = this.getNodeParameter('operation', 0) as string;
 
-		const operationHandlers = {
-			getTranscript: actions.executeGetTranscript.bind(this),
-			uploadAudio: actions.executeUploadAudio.bind(this),
-			getTranscriptAnalytics: actions.executeGetTranscriptAnalytics.bind(this),
-			getTranscriptSummary: actions.executeGetTranscriptSummary.bind(this),
-			getTranscriptsList: actions.executeGetTranscriptsList.bind(this),
-			getAIAppOutputs: actions.executeGetAIAppOutputs.bind(this),
-			getUsers: actions.executeGetUsers.bind(this),
-			getCurrentUser: actions.executeGetCurrentUser.bind(this),
-		};
+    // Look up the function for the selected resource and operation
+    const fn = resourceOperationsFunctions[resource]?.[operation];
 
-		for (let i = 0; i < items.length; i++) {
-			const operation = this.getNodeParameter('operation', i) as keyof typeof operationHandlers;
-			const handler = operationHandlers[operation];
+    // If the function is not found, return an error
+    if (!fn) {
+      throw new NodeApiError(this.getNode(), {
+        message: 'Operation not supported',
+        description: `The operation "${operation}" for resource "${resource}" is not supported!`,
+      });
+    }
 
-			try {
-				if (!handler) throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-				const result = await handler(i);
-				returnData.push(...(Array.isArray(result) ? result : [result]));
-			} catch (error) {
-				if (this.continueOnFail()) {
-					returnData.push({ json: { error: error.message }, pairedItem: i });
-					continue;
-				}
-				throw new NodeOperationError(this.getNode(), error, { itemIndex: i });
-			}
-		}
+    try {
+      const responseData = await fn(this);
 
-		return [returnData];
-	}
+      return [this.helpers.returnJsonArray(responseData)];
+    } catch (error) {
+      if (this.continueOnFail()) {
+        return [[{ json: { error: error.message } }]];
+      }
+      throw error;
+    }
+  }
 }

@@ -1,25 +1,6 @@
-import { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
-import { callGraphQLApi } from '../transport';
-import { getAIAppOutputsQuery } from '../helpers/queries';
+import { INodeProperties } from 'n8n-workflow';
 
-export async function executeGetAIAppOutputs(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
-  const appId = this.getNodeParameter('appId', i, '') as string;
-  const transcriptId = this.getNodeParameter('transcriptId', i, '') as string;
-  const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
-  const limit = returnAll ? null : this.getNodeParameter('limit', i, 10) as number;
-  const skip = this.getNodeParameter('skip', i, 0) as number;
-
-  const response = await callGraphQLApi.call(this, getAIAppOutputsQuery, {
-    appId: appId || undefined,
-    transcriptId: transcriptId || undefined,
-    skip,
-    limit: limit || undefined,
-  });
-
-  return response.apps.outputs.map((output: any) => ({ json: output }));
-}
-
-export const GetAIAppOutputsProperties: INodeProperties[] = [
+export const aiAppFields: INodeProperties[] = [
   {
     displayName: 'App ID',
     name: 'appId',
@@ -27,6 +8,7 @@ export const GetAIAppOutputsProperties: INodeProperties[] = [
     default: '',
     displayOptions: {
       show: {
+        resource: ['aiApp'],
         operation: ['getAIAppOutputs'],
       },
     },
@@ -39,6 +21,7 @@ export const GetAIAppOutputsProperties: INodeProperties[] = [
     default: '',
     displayOptions: {
       show: {
+        resource: ['aiApp'],
         operation: ['getAIAppOutputs'],
       },
     },
@@ -51,6 +34,7 @@ export const GetAIAppOutputsProperties: INodeProperties[] = [
     default: false,
     displayOptions: {
       show: {
+        resource: ['aiApp'],
         operation: ['getAIAppOutputs'],
       },
     },
@@ -60,12 +44,17 @@ export const GetAIAppOutputsProperties: INodeProperties[] = [
     displayName: 'Limit',
     name: 'limit',
     type: 'number',
-    default: 50,
-	typeOptions: {
-		minValue: 1,
-	},
+    // API supports max of 10 results
+    // eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
+    default: 10,
+    typeOptions: {
+      minValue: 1,
+      // eslint-disable-next-line n8n-nodes-base/node-param-type-options-max-value-present
+      maxValue: 10,
+    },
     displayOptions: {
       show: {
+        resource: ['aiApp'],
         operation: ['getAIAppOutputs'],
         returnAll: [false],
       },
@@ -77,8 +66,12 @@ export const GetAIAppOutputsProperties: INodeProperties[] = [
     name: 'skip',
     type: 'number',
     default: 0,
+    typeOptions: {
+      minValue: 0,
+    },
     displayOptions: {
       show: {
+        resource: ['aiApp'],
         operation: ['getAIAppOutputs'],
       },
     },
