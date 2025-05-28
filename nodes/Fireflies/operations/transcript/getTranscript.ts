@@ -2,9 +2,9 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 import { callGraphQLApi } from '../../transport';
 import { getTranscriptQuery } from '../../helpers/queries';
 
-export async function getTranscript(ef: IExecuteFunctions): Promise<INodeExecutionData> {
+export async function getTranscript(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
-    const transcriptId = ef.getNodeParameter('transcriptId', 0) as string;
+    const transcriptId = ef.getNodeParameter('transcriptId', index) as string;
 
     const response = await callGraphQLApi.call(ef, getTranscriptQuery, { transcriptId });
 

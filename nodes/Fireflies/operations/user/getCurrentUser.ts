@@ -2,7 +2,7 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 import { callGraphQLApi } from '../../transport';
 import { getCurrentUserQuery } from '../../helpers/queries';
 
-export async function getCurrentUser(ef: IExecuteFunctions): Promise<INodeExecutionData> {
+export async function getCurrentUser(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
     const response = await callGraphQLApi.call(ef, getCurrentUserQuery, {});
 
