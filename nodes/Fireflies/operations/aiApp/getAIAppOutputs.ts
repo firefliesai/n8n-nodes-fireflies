@@ -6,8 +6,7 @@ export async function getAIAppOutputs(ef: IExecuteFunctions): Promise<INodeExecu
   try {
     const appId = ef.getNodeParameter('appId', 0, '') as string;
     const transcriptId = ef.getNodeParameter('transcriptId', 0, '') as string;
-    const returnAll = ef.getNodeParameter('returnAll', 0, false) as boolean;
-    const limit = returnAll ? null : (ef.getNodeParameter('limit', 0, 50) as number);
+    const limit = ef.getNodeParameter('limit', 0, 10) as number;
     const skip = ef.getNodeParameter('skip', 0, 0) as number;
 
     const response = await callGraphQLApi.call(ef, getAIAppOutputsQuery, {

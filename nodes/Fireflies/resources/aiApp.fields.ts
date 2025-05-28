@@ -28,19 +28,6 @@ export const aiAppFields: INodeProperties[] = [
     description: 'ID of the transcript to get app outputs for',
   },
   {
-    displayName: 'Return All',
-    name: 'returnAll',
-    type: 'boolean',
-    default: false,
-    displayOptions: {
-      show: {
-        resource: ['aiApp'],
-        operation: ['getAIAppOutputs'],
-      },
-    },
-    description: 'Whether to return all results or only up to a given limit',
-  },
-  {
     displayName: 'Limit',
     name: 'limit',
     type: 'number',
@@ -56,7 +43,6 @@ export const aiAppFields: INodeProperties[] = [
       show: {
         resource: ['aiApp'],
         operation: ['getAIAppOutputs'],
-        returnAll: [false],
       },
     },
     description: 'Max number of results to return',
