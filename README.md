@@ -90,6 +90,10 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 
 ## Version history
 
+### 1.0.6
+
+- Removed unsupported field from getAiAppOutput operation
+
 ### 1.0.5
 
 - Fixes bug in handling input data
