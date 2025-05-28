@@ -34,29 +34,40 @@ export class Fireflies implements INodeType {
   };
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-    const resource = this.getNodeParameter('resource', 0) as string;
-    const operation = this.getNodeParameter('operation', 0) as string;
+    const items = this.getInputData();
+    const returnData: INodeExecutionData[] = [];
 
-    // Look up the function for the selected resource and operation
-    const fn = resourceOperationsFunctions[resource]?.[operation];
+    for (let i = 0; i < items.length; i++) {
+      const resource = this.getNodeParameter('resource', i) as string;
+      const operation = this.getNodeParameter('operation', i) as string;
 
-    // If the function is not found, return an error
-    if (!fn) {
-      throw new NodeApiError(this.getNode(), {
-        message: 'Operation not supported',
-        description: `The operation "${operation}" for resource "${resource}" is not supported!`,
-      });
-    }
+      // Look up the function for the selected resource and operation
+      const fn = resourceOperationsFunctions[resource]?.[operation];
 
-    try {
-      const responseData = await fn(this);
-
-      return [this.helpers.returnJsonArray(responseData)];
-    } catch (error) {
-      if (this.continueOnFail()) {
-        return [[{ json: { error: error.message } }]];
+      // If the function is not found, return an error
+      if (!fn) {
+        if (this.continueOnFail()) {
+          returnData.push({ json: { error: `Operation "${operation}" for resource "${resource}" is not supported!` }, pairedItem: i });
+          continue;
+        }
+        throw new NodeApiError(this.getNode(), {
+          message: 'Operation not supported',
+          description: `The operation "${operation}" for resource "${resource}" is not supported!`,
+        });
       }
-      throw error;
+
+      try {
+        const responseData = await fn(this, i);
+        returnData.push(...this.helpers.returnJsonArray(responseData));
+      } catch (error) {
+        if (this.continueOnFail()) {
+          returnData.push({ json: { error: error.message }, pairedItem: i });
+          continue;
+        }
+        throw new NodeApiError(this.getNode(), error, { itemIndex: i });
+      }
     }
+
+    return [returnData];
   }
 }
