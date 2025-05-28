@@ -2,12 +2,12 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 import { callGraphQLApi } from '../../transport';
 import { uploadAudioMutation } from '../../helpers/queries';
 
-export async function uploadAudio(ef: IExecuteFunctions): Promise<INodeExecutionData> {
+export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
-    const url = ef.getNodeParameter('url', 0) as string;
-    const title = ef.getNodeParameter('title', 0) as string;
+    const url = ef.getNodeParameter('url', index) as string;
+    const title = ef.getNodeParameter('title', index) as string;
 
-    const additionalFields = ef.getNodeParameter('additionalFields', 0, {}) as {
+    const additionalFields = ef.getNodeParameter('additionalFields', index, {}) as {
       attendees?: {
         attendeeValues: Array<{ displayName: string; email: string; phoneNumber: string }>;
       };

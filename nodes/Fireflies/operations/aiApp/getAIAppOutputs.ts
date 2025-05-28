@@ -2,12 +2,12 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 import { callGraphQLApi } from '../../transport';
 import { getAIAppOutputsQuery } from '../../helpers/queries';
 
-export async function getAIAppOutputs(ef: IExecuteFunctions): Promise<INodeExecutionData[]> {
+export async function getAIAppOutputs(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
-    const appId = ef.getNodeParameter('appId', 0, '') as string;
-    const transcriptId = ef.getNodeParameter('transcriptId', 0, '') as string;
-    const limit = ef.getNodeParameter('limit', 0, 10) as number;
-    const skip = ef.getNodeParameter('skip', 0, 0) as number;
+    const appId = ef.getNodeParameter('appId', index, '') as string;
+    const transcriptId = ef.getNodeParameter('transcriptId', index, '') as string;
+    const limit = ef.getNodeParameter('limit', index, 10) as number;
+    const skip = ef.getNodeParameter('skip', index, 0) as number;
 
     const response = await callGraphQLApi.call(ef, getAIAppOutputsQuery, {
       appId: appId || undefined,

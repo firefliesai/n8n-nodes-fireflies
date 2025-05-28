@@ -2,12 +2,12 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 import { callGraphQLApi } from '../../transport';
 import { getTranscriptsListQuery } from '../../helpers/queries';
 
-export async function getTranscriptsList(ef: IExecuteFunctions): Promise<INodeExecutionData[]> {
+export async function getTranscriptsList(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
-    const limit = ef.getNodeParameter('limit', 0, 50) as number;
-    const skip = ef.getNodeParameter('skip', 0, 0) as number;
+    const limit = ef.getNodeParameter('limit', index, 50) as number;
+    const skip = ef.getNodeParameter('skip', index, 0) as number;
 
-    const filters = ef.getNodeParameter('filters', 0, {}) as {
+    const filters = ef.getNodeParameter('filters', index, {}) as {
       title?: string;
       date?: number;
       fromDate?: string;
