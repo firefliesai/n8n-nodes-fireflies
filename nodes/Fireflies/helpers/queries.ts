@@ -187,8 +187,6 @@ export const getTranscriptQuery = `
         fred_joined
       }
       transcript_url
-      audio_url
-      video_url
       dateString
       meeting_attendees {
         displayName
