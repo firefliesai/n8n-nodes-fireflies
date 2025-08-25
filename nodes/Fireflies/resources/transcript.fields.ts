@@ -12,7 +12,7 @@ export const transcriptFields: INodeProperties[] = [
     displayOptions: {
       show: {
         resource: ['transcript'],
-        operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary'],
+        operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary', 'getTranscriptAudioUrl', 'getTranscriptVideoUrl'],
       },
     },
     description: 'ID of the transcript to operate on',

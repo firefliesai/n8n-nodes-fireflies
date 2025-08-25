@@ -227,3 +227,25 @@ export const getCurrentUserQuery = `
     }
   }
 `;
+
+export const getTranscriptVideoUrlQuery = `
+  query GetTranscriptVideoUrl($transcriptId: String!) {
+    transcript(id: $transcriptId) {
+      id
+      title
+      video_url
+      dateString
+    }
+  }
+`;
+
+export const getTranscriptAudioUrlQuery = `
+  query GetTranscriptAudioUrl($transcriptId: String!) {
+    transcript(id: $transcriptId) {
+      id
+      title
+      audio_url
+      dateString
+    }
+  }
+`;

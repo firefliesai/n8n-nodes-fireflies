@@ -11,8 +11,10 @@ export const resourceOperationsFunctions: { [key: string]: { [key: string]: any 
   transcript: {
     getTranscript: transcript.getTranscript,
     getTranscriptAnalytics: transcript.getTranscriptAnalytics,
+    getTranscriptAudioUrl: transcript.getTranscriptAudioUrl,
     getTranscriptSummary: transcript.getTranscriptSummary,
     getTranscriptsList: transcript.getTranscriptsList,
+    getTranscriptVideoUrl: transcript.getTranscriptVideoUrl,
   },
   aiApp: {
     getAIAppOutputs: aiApp.getAIAppOutputs,
