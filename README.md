@@ -90,6 +90,14 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 
 ## Version history
 
+### 2.0.0
+
+- ✨ **New Operations**: Added `GetTranscriptVideoUrl` and `GetTranscriptAudioUrl` operations for direct media access
+- 🔧 **Enhanced Error Handling**: Comprehensive GraphQL error detection with detailed error codes and correlation IDs
+- 🏗️ **Architecture Improvements**: Implemented generic error handling system for consistent error responses across all operations
+- 📚 **Code Quality**: Refactored codebase for better maintainability and reduced duplication
+- ⚠️ **Breaking Changes**: Removed `audio_url` and `video_url` from `GetTranscript` operation due to GraphQL API's partial data response behavior
+
 ### 1.0.7
 
 - Fixed nodeParameter handling for all operations
