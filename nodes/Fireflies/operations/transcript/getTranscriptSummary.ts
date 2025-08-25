@@ -1,6 +1,7 @@
-import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-workflow';
+import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptSummaryQuery } from '../../helpers/queries';
+import { getTranscriptSummaryQuery } from '../../helpers';
+import { handleOperationError } from '../../helpers';
 
 export async function getTranscriptSummary(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
@@ -15,25 +16,15 @@ export async function getTranscriptSummary(ef: IExecuteFunctions, index: number)
       },
     };
   } catch (error) {
-    const errorData = {
-      success: false,
-      error: {
-        message: error.message,
-        details: 'Error retrieving transcript summary',
-        code: error.code || 'UNKNOWN_ERROR',
-        timestamp: new Date().toISOString(),
-      },
-    };
-
-    if (!ef.continueOnFail()) {
-      throw new NodeOperationError(ef.getNode(), error.message, {
-        message: errorData.error.message,
-        description: errorData.error.details,
-      });
-    }
+    const errorResponse = handleOperationError(
+      ef.getNode(),
+      error,
+      ef.continueOnFail(),
+      'getTranscriptSummary'
+    );
 
     return {
-      json: errorData,
+      json: errorResponse,
     };
   }
 }
