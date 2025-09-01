@@ -1,6 +1,6 @@
-import { getTranscript } from './getTranscript';
-import { getTranscriptAnalytics } from './getTranscriptAnalytics';
-import { getTranscriptSummary } from './getTranscriptSummary';
-import { getTranscriptsList } from './getTranscriptsList';
-
-export { getTranscript, getTranscriptAnalytics, getTranscriptSummary, getTranscriptsList };
+export { getTranscript } from './getTranscript';
+export { getTranscriptsList } from './getTranscriptsList';
+export { getTranscriptSummary } from './getTranscriptSummary';
+export { getTranscriptAnalytics } from './getTranscriptAnalytics';
+export { getTranscriptVideoUrl } from './getTranscriptVideoUrl';
+export { getTranscriptAudioUrl } from './getTranscriptAudioUrl';

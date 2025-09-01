@@ -187,8 +187,6 @@ export const getTranscriptQuery = `
         fred_joined
       }
       transcript_url
-      audio_url
-      video_url
       dateString
       meeting_attendees {
         displayName
@@ -226,6 +224,28 @@ export const getCurrentUserQuery = `
       recent_transcript
       recent_meeting
       minutes_consumed
+    }
+  }
+`;
+
+export const getTranscriptVideoUrlQuery = `
+  query GetTranscriptVideoUrl($transcriptId: String!) {
+    transcript(id: $transcriptId) {
+      id
+      title
+      video_url
+      dateString
+    }
+  }
+`;
+
+export const getTranscriptAudioUrlQuery = `
+  query GetTranscriptAudioUrl($transcriptId: String!) {
+    transcript(id: $transcriptId) {
+      id
+      title
+      audio_url
+      dateString
     }
   }
 `;

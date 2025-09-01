@@ -24,6 +24,12 @@ export const transcriptOperations: INodeProperties = {
       value: 'getTranscriptAnalytics',
     },
     {
+      name: 'Get Audio URL',
+      action: 'Get audio URL of a transcript',
+      description: 'Get the audio URL for a transcript',
+      value: 'getTranscriptAudioUrl',
+    },
+    {
       name: 'Get List',
       action: 'Get a list of transcripts',
       description: 'Get a list of transcripts with optional filters',
@@ -34,6 +40,12 @@ export const transcriptOperations: INodeProperties = {
       action: 'Get a summary of a transcript',
       description: 'Get a summary of a transcript',
       value: 'getTranscriptSummary',
+    },
+    {
+      name: 'Get Video URL',
+      action: 'Get video URL of a transcript',
+      description: 'Get the video URL for a transcript',
+      value: 'getTranscriptVideoUrl',
     },
   ],
   default: 'getTranscript',

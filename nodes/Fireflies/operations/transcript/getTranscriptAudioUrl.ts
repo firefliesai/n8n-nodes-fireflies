@@ -1,13 +1,13 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptSummaryQuery } from '../../helpers';
+import { getTranscriptAudioUrlQuery } from '../../helpers';
 import { handleOperationError } from '../../helpers';
 
-export async function getTranscriptSummary(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
+export async function getTranscriptAudioUrl(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
     const transcriptId = ef.getNodeParameter('transcriptId', index) as string;
 
-    const response = await callGraphQLApi.call(ef, getTranscriptSummaryQuery, { transcriptId });
+    const response = await callGraphQLApi.call(ef, getTranscriptAudioUrlQuery, { transcriptId });
 
     return {
       json: {
@@ -20,7 +20,7 @@ export async function getTranscriptSummary(ef: IExecuteFunctions, index: number)
       ef.getNode(),
       error,
       ef.continueOnFail(),
-      'getTranscriptSummary'
+      'getTranscriptAudioUrl'
     );
 
     return {

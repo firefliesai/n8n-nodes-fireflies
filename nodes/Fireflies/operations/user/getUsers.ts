@@ -1,6 +1,7 @@
-import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-workflow';
+import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getUsersQuery } from '../../helpers/queries';
+import { getUsersQuery } from '../../helpers';
+import { handleOperationError } from '../../helpers';
 
 export async function getUsers(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
@@ -13,23 +14,13 @@ export async function getUsers(ef: IExecuteFunctions, index: number): Promise<IN
       },
     }));
   } catch (error) {
-    const errorData = {
-      success: false,
-      error: {
-        message: error.message,
-        details: 'Error retrieving users data',
-        code: error.code || 'UNKNOWN_ERROR',
-        timestamp: new Date().toISOString(),
-      },
-    };
+    const errorResponse = handleOperationError(
+      ef.getNode(),
+      error,
+      ef.continueOnFail(),
+      'getUsers'
+    );
 
-    if (!ef.continueOnFail()) {
-      throw new NodeOperationError(ef.getNode(), error.message, {
-        message: errorData.error.message,
-        description: errorData.error.details,
-      });
-    }
-
-    return [{ json: errorData }];
+    return [{ json: errorResponse }];
   }
 }
