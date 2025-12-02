@@ -249,3 +249,97 @@ export const getTranscriptAudioUrlQuery = `
     }
   }
 `;
+
+// AskFred Queries and Mutations
+
+export const getAskFredThreadsQuery = `
+  query GetAskFredThreads($transcriptId: String) {
+    askfred_threads(transcript_id: $transcriptId) {
+      id
+      title
+      transcript_id
+      user_id
+      created_at
+    }
+  }
+`;
+
+export const getAskFredThreadQuery = `
+  query GetAskFredThread($id: String!) {
+    askfred_thread(id: $id) {
+      id
+      title
+      transcript_id
+      user_id
+      created_at
+      messages {
+        id
+        thread_id
+        query
+        answer
+        suggested_queries
+        status
+        created_at
+        updated_at
+      }
+    }
+  }
+`;
+
+export const createAskFredThreadMutation = `
+  mutation CreateAskFredThread($input: CreateAskFredThreadInput!) {
+    createAskFredThread(input: $input) {
+      message {
+        id
+        thread_id
+        query
+        answer
+        suggested_queries
+        status
+        created_at
+        updated_at
+      }
+      cost
+    }
+  }
+`;
+
+export const continueAskFredThreadMutation = `
+  mutation ContinueAskFredThread($input: ContinueAskFredThreadInput!) {
+    continueAskFredThread(input: $input) {
+      message {
+        id
+        thread_id
+        query
+        answer
+        suggested_queries
+        status
+        created_at
+        updated_at
+      }
+      cost
+    }
+  }
+`;
+
+export const deleteAskFredThreadMutation = `
+  mutation DeleteAskFredThread($id: String!) {
+    deleteAskFredThread(id: $id) {
+      id
+      title
+      transcript_id
+      user_id
+      created_at
+      messages {
+        id
+        thread_id
+        query
+        answer
+        suggested_queries
+        status
+        created_at
+        updated_at
+      }
+    }
+  }
+`;

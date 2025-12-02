@@ -2,6 +2,7 @@ import * as user from './user';
 import * as transcript from './transcript';
 import * as aiApp from './aiApp';
 import * as audio from './audio';
+import * as askFred from './askFred';
 
 export const resourceOperationsFunctions: { [key: string]: { [key: string]: any } } = {
   user: {
@@ -21,5 +22,12 @@ export const resourceOperationsFunctions: { [key: string]: { [key: string]: any 
   },
   audio: {
     uploadAudio: audio.uploadAudio,
+  },
+  askFred: {
+    createThread: askFred.createThread,
+    continueThread: askFred.continueThread,
+    getThread: askFred.getThread,
+    getThreads: askFred.getThreads,
+    deleteThread: askFred.deleteThread,
   },
 };
