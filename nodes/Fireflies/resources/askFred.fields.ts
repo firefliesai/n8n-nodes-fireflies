@@ -207,37 +207,18 @@ export const askFredFields: INodeProperties[] = [
     ],
   },
 
-  // Pagination for getThreads
+  // Optional transcript filter for getThreads
   {
-    displayName: 'Limit',
-    name: 'limit',
-    type: 'number',
-    typeOptions: {
-      minValue: 1,
-    },
-    default: 50,
+    displayName: 'Transcript ID',
+    name: 'transcriptId',
+    type: 'string',
+    default: '',
     displayOptions: {
       show: {
         resource: ['askFred'],
         operation: ['getThreads'],
       },
     },
-    description: 'Max number of results to return',
-  },
-  {
-    displayName: 'Skip',
-    name: 'skip',
-    type: 'number',
-    typeOptions: {
-      minValue: 0,
-    },
-    default: 0,
-    displayOptions: {
-      show: {
-        resource: ['askFred'],
-        operation: ['getThreads'],
-      },
-    },
-    description: 'Number of threads to skip for pagination',
+    description: 'Optional: Filter threads by a specific transcript ID',
   },
 ];

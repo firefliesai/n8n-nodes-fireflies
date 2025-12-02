@@ -4,7 +4,14 @@ import { getAskFredThreadsQuery, handleOperationError } from '../../helpers';
 
 export async function getThreads(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
-    const response = await callGraphQLApi.call(ef, getAskFredThreadsQuery, {});
+    const transcriptId = ef.getNodeParameter('transcriptId', index, '') as string;
+
+    const variables: Record<string, any> = {};
+    if (transcriptId) {
+      variables.transcriptId = transcriptId;
+    }
+
+    const response = await callGraphQLApi.call(ef, getAskFredThreadsQuery, variables);
 
     const threads = response.askfred_threads || [];
 
