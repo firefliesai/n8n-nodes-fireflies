@@ -69,17 +69,17 @@ export const askFredFields: INodeProperties[] = [
         displayName: 'Format Mode',
         name: 'formatMode',
         type: 'options',
-        default: 'DEFAULT',
+        default: 'markdown',
         options: [
           {
-            name: 'Default',
-            value: 'DEFAULT',
-            description: 'Standard response format',
+            name: 'Markdown',
+            value: 'markdown',
+            description: 'Response formatted with markdown',
           },
           {
-            name: 'Toon',
-            value: 'TOON',
-            description: 'Token-efficient response format',
+            name: 'Plain Text',
+            value: 'plaintext',
+            description: 'Response in plain text format',
           },
         ],
         description: 'The format mode for the response',
@@ -94,7 +94,7 @@ export const askFredFields: INodeProperties[] = [
     ],
   },
 
-  // Filters for createThread - to query across multiple meetings
+  // Filters for createThread- to query across multiple meetings
   {
     displayName: 'Meeting Filters',
     name: 'filters',
@@ -182,17 +182,17 @@ export const askFredFields: INodeProperties[] = [
         displayName: 'Format Mode',
         name: 'formatMode',
         type: 'options',
-        default: 'DEFAULT',
+        default: 'markdown',
         options: [
           {
-            name: 'Default',
-            value: 'DEFAULT',
-            description: 'Standard response format',
+            name: 'Markdown',
+            value: 'markdown',
+            description: 'Response formatted with markdown',
           },
           {
-            name: 'Toon',
-            value: 'TOON',
-            description: 'Token-efficient response format',
+            name: 'Plain Text',
+            value: 'plaintext',
+            description: 'Response in plain text format',
           },
         ],
         description: 'The format mode for the response',
