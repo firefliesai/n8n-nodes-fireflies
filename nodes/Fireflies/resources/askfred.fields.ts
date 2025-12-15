@@ -26,6 +26,7 @@ export const askfredFields: INodeProperties[] = [
     default: '',
     typeOptions: {
       rows: 4,
+      maxLength: 2000,
     },
     displayOptions: {
       show: {

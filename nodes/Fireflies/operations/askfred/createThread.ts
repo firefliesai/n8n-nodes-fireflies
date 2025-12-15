@@ -54,19 +54,19 @@ export async function createThread(ef: IExecuteFunctions, index: number): Promis
       }
 
       if (meetingFilters.channelIds) {
-        filters.channel_ids = meetingFilters.channelIds.split(',').map(id => id.trim());
+        filters.channel_ids = meetingFilters.channelIds.split(',').map(id => id.trim()).filter(id => id);
       }
 
       if (meetingFilters.organizers) {
-        filters.organizers = meetingFilters.organizers.split(',').map(email => email.trim());
+        filters.organizers = meetingFilters.organizers.split(',').map(email => email.trim()).filter(email => email);
       }
 
       if (meetingFilters.participants) {
-        filters.participants = meetingFilters.participants.split(',').map(email => email.trim());
+        filters.participants = meetingFilters.participants.split(',').map(email => email.trim()).filter(email => email);
       }
 
       if (meetingFilters.transcriptIds) {
-        filters.transcript_ids = meetingFilters.transcriptIds.split(',').map(id => id.trim());
+        filters.transcript_ids = meetingFilters.transcriptIds.split(',').map(id => id.trim()).filter(id => id);
       }
 
       input.filters = filters;
