@@ -45,6 +45,25 @@ The **Fireflies** node supports the following operations for interacting with th
 - **Upload Audio**  
   Upload audio recordings for transcription. This is useful for meetings, interviews, or any spoken content you want transcribed.
 
+### AskFred Operations
+
+AskFred is Fireflies' AI assistant that can answer questions about your meetings using natural language.
+
+- **Get Threads**  
+  Retrieve a list of all AskFred conversation threads. Optionally filter by a specific transcript ID.
+
+- **Get Thread**  
+  Get a specific AskFred thread with all its messages, including questions and AI-generated answers.
+
+- **Create Thread**  
+  Start a new conversation with AskFred by asking a question. You can ask about a specific meeting or query across multiple meetings using filters (date range, participants, organizers, channels).
+
+- **Continue Thread**  
+  Continue an existing AskFred conversation with a follow-up question. The AI maintains context from previous messages in the thread.
+
+- **Delete Thread**  
+  Delete an AskFred thread and all its associated messages.
+
 ---
 
 ## Usage
@@ -89,6 +108,18 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 - [Fireflies.ai API documentation](https://docs.fireflies.ai)
 
 ## Version history
+
+### 2.1.0
+
+- ✨ **New Resource**: Added AskFred resource for AI-powered meeting Q&A
+- 🆕 **New Operations**: 
+  - `Get Threads`: List all AskFred conversation threads
+  - `Get Thread`: Retrieve a specific thread with all messages
+  - `Create Thread`: Start a new conversation with AskFred
+  - `Continue Thread`: Add follow-up questions to existing threads
+  - `Delete Thread`: Remove threads and their messages
+- 🔍 **Meeting Filters**: Create Thread supports filtering by date range, participants, organizers, channels, and transcript IDs
+- 🌐 **Response Options**: Configurable response language and format mode (markdown/plaintext)
 
 ### 2.0.0
 
