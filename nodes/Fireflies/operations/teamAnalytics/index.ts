@@ -1,0 +1,1 @@
+export { getTeamAnalytics } from './getTeamAnalytics';
