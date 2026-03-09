@@ -12,6 +12,12 @@ export const transcriptOperations: INodeProperties = {
   },
   options: [
     {
+      name: 'Delete',
+      action: 'Delete a transcript',
+      description: 'Permanently delete a transcript',
+      value: 'deleteTranscript',
+    },
+    {
       name: 'Get',
       action: 'Get a transcript',
       description: 'Get transcript details',
@@ -46,6 +52,36 @@ export const transcriptOperations: INodeProperties = {
       action: 'Get video URL of a transcript',
       description: 'Get the video URL for a transcript',
       value: 'getTranscriptVideoUrl',
+    },
+    {
+      name: 'Revoke Shared Access',
+      action: 'Revoke shared meeting access',
+      description: 'Revoke shared access to a meeting',
+      value: 'revokeSharedMeetingAccess',
+    },
+    {
+      name: 'Share',
+      action: 'Share a meeting',
+      description: 'Share a meeting with other users',
+      value: 'shareMeeting',
+    },
+    {
+      name: 'Update Channel',
+      action: 'Update meeting channel',
+      description: 'Move a meeting to a different channel',
+      value: 'updateMeetingChannel',
+    },
+    {
+      name: 'Update Privacy',
+      action: 'Update meeting privacy',
+      description: 'Change the privacy setting of a meeting',
+      value: 'updateMeetingPrivacy',
+    },
+    {
+      name: 'Update Title',
+      action: 'Update meeting title',
+      description: 'Update the title of a meeting',
+      value: 'updateMeetingTitle',
     },
   ],
   default: 'getTranscript',

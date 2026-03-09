@@ -18,6 +18,11 @@ export async function getTranscriptsList(ef: IExecuteFunctions, index: number): 
       participantEmail?: string;
       userId?: string;
       mine?: boolean;
+      keyword?: string;
+      scope?: string;
+      organizers?: string;
+      participants?: string;
+      channelId?: string;
     };
 
     const variables: Record<string, any> = {
@@ -34,6 +39,11 @@ export async function getTranscriptsList(ef: IExecuteFunctions, index: number): 
     if (filters.participantEmail) variables.participantEmail = filters.participantEmail;
     if (filters.userId) variables.userId = filters.userId;
     if (filters.mine !== undefined) variables.mine = filters.mine;
+    if (filters.keyword) variables.keyword = filters.keyword;
+    if (filters.scope) variables.scope = filters.scope;
+    if (filters.organizers) variables.organizers = filters.organizers.split(',').map((s) => s.trim()).filter(Boolean);
+    if (filters.participants) variables.participants = filters.participants.split(',').map((s) => s.trim()).filter(Boolean);
+    if (filters.channelId) variables.channelId = filters.channelId;
 
     const response = await callGraphQLApi.call(ef, getTranscriptsListQuery, variables);
 
