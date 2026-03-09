@@ -109,6 +109,20 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 
 ## Version history
 
+### 2.2.0
+
+- ✨ **New Resources**: Meeting, Channel, Bite, Contact, Team Analytics
+- 🆕 **New Operations**:
+  - **Transcript**: `Delete`, `Share`, `Revoke Shared Access`, `Update Title`, `Update Privacy`, `Update Channel`
+  - **User**: `Get Groups`, `Set Role`
+  - **Meeting**: `Get Active Meetings`, `Add to Live Meeting`
+  - **Channel**: `Get`, `Get List`
+  - **Bite**: `Get`, `Get List`, `Create`
+  - **Contact**: `Get List`
+  - **Team Analytics**: `Get Team Analytics` (requires admin privileges)
+- 🔍 **Extended Filters**: `Get Transcripts List` now supports filtering by keyword, scope, organizers, participants, and channel ID
+- 🔧 **Audio Enhancements**: `Upload Audio` now supports `bypass_size_check` and `download_auth` (bearer/basic) for authenticated downloads
+
 ### 2.1.0
 
 - ✨ **New Resource**: Added AskFred resource for AI-powered meeting Q&A
