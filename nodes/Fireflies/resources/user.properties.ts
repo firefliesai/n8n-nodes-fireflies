@@ -18,10 +18,22 @@ export const userOperations: INodeProperties = {
       value: 'getCurrentUser',
     },
     {
+      name: 'Get Groups',
+      action: 'Get user groups',
+      description: 'Get a list of user groups in the workspace',
+      value: 'getUserGroups',
+    },
+    {
       name: 'Get List',
       action: 'Get a list of users',
       description: 'Get a list of users',
       value: 'getUsers',
+    },
+    {
+      name: 'Set Role',
+      action: 'Set user role',
+      description: 'Change the role of a user in the workspace',
+      value: 'setUserRole',
     },
   ],
   default: 'getCurrentUser',
