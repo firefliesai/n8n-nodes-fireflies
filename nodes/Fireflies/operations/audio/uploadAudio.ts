@@ -12,8 +12,12 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
       attendees?: {
         attendeeValues: Array<{ displayName: string; email: string; phoneNumber: string }>;
       };
+      bypass_size_check?: boolean;
       client_reference_id?: string;
       custom_language?: string;
+      download_auth?: {
+        authValues?: Array<{ type: string; token?: string; username?: string; password?: string }>;
+      };
       save_video?: boolean;
       webhook?: string;
     };
@@ -45,6 +49,21 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
 
     if (additionalFields.webhook) {
       input.webhook = additionalFields.webhook;
+    }
+
+    if (additionalFields.bypass_size_check !== undefined) {
+      input.bypass_size_check = additionalFields.bypass_size_check;
+    }
+
+    if (additionalFields.download_auth?.authValues?.length) {
+      const auth = additionalFields.download_auth.authValues[0];
+      const downloadAuth: Record<string, any> = { type: auth.type };
+      if (auth.type === 'bearer' && auth.token) {
+        downloadAuth.bearer = { token: auth.token };
+      } else if (auth.type === 'basic' && (auth.username || auth.password)) {
+        downloadAuth.basic = { username: auth.username ?? '', password: auth.password ?? '' };
+      }
+      input.download_auth = downloadAuth;
     }
 
     const response = await callGraphQLApi.call(ef, uploadAudioMutation, { input });

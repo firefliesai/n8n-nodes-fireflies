@@ -85,6 +85,62 @@ export const audioFields: INodeProperties[] = [
         description: 'Custom identifier for the recording',
       },
       {
+        displayName: 'Bypass Size Check',
+        name: 'bypass_size_check',
+        type: 'boolean',
+        default: false,
+        description: 'Whether to bypass the file size check',
+      },
+      {
+        displayName: 'Download Auth',
+        name: 'download_auth',
+        type: 'fixedCollection',
+        default: {},
+        description: 'Authentication credentials for downloading the audio file',
+        options: [
+          {
+            name: 'authValues',
+            displayName: 'Auth',
+            values: [
+              {
+                displayName: 'Type',
+                name: 'type',
+                type: 'options',
+                options: [
+                  { name: 'Bearer', value: 'bearer' },
+                  { name: 'Basic', value: 'basic' },
+                ],
+                default: 'bearer',
+                description: 'Authentication type',
+              },
+              {
+                displayName: 'Token',
+                name: 'token',
+                type: 'string',
+                typeOptions: { password: true },
+                default: '',
+                description: 'Bearer token (used when type is Bearer)',
+              },
+              {
+                displayName: 'Username',
+                name: 'username',
+                type: 'string',
+                default: '',
+                description: 'Username (used when type is Basic)',
+              },
+              {
+                displayName: 'Password',
+                name: 'password',
+                type: 'string',
+                typeOptions: { password: true },
+                default: '',
+                description: 'Password (used when type is Basic)',
+              },
+            ],
+          },
+        ],
+      },
+      {
         displayName: 'Custom Language',
         name: 'custom_language',
         type: 'string',
