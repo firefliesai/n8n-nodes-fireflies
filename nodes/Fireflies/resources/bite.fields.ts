@@ -58,6 +58,52 @@ export const biteFields: INodeProperties[] = [
     description: 'End time in seconds',
   },
   {
+    displayName: 'Filter By',
+    name: 'filterBy',
+    type: 'options',
+    required: true,
+    default: 'mine',
+    displayOptions: {
+      show: {
+        resource: ['bite'],
+        operation: ['getBites'],
+      },
+    },
+    options: [
+      {
+        name: 'Mine',
+        value: 'mine',
+        description: 'Return only bites created by you',
+      },
+      {
+        name: 'My Team',
+        value: 'myTeam',
+        description: 'Return bites from your team',
+      },
+      {
+        name: 'Transcript',
+        value: 'transcript',
+        description: 'Return bites from a specific transcript',
+      },
+    ],
+    description: 'How to filter the bites list',
+  },
+  {
+    displayName: 'Transcript ID',
+    name: 'transcriptId',
+    type: 'string',
+    required: true,
+    default: '',
+    displayOptions: {
+      show: {
+        resource: ['bite'],
+        operation: ['getBites'],
+        filterBy: ['transcript'],
+      },
+    },
+    description: 'ID of the transcript to filter bites by',
+  },
+  {
     displayName: 'Limit',
     name: 'limit',
     type: 'number',
@@ -78,49 +124,13 @@ export const biteFields: INodeProperties[] = [
     name: 'skip',
     type: 'number',
     default: 0,
-    description: 'Offset for pagination',
+    description: 'Number of results to skip for pagination',
     displayOptions: {
       show: {
         resource: ['bite'],
         operation: ['getBites'],
       },
     },
-  },
-  {
-    displayName: 'Additional Fields',
-    name: 'additionalFields',
-    type: 'collection',
-    placeholder: 'Add Field',
-    default: {},
-    displayOptions: {
-      show: {
-        resource: ['bite'],
-        operation: ['getBites'],
-      },
-    },
-    options: [
-      {
-        displayName: 'Mine',
-        name: 'mine',
-        type: 'boolean',
-        default: false,
-        description: 'Whether to only return bites created by you',
-      },
-      {
-        displayName: 'My Team',
-        name: 'myTeam',
-        type: 'boolean',
-        default: false,
-        description: 'Whether to only return bites from your team',
-      },
-      {
-        displayName: 'Transcript ID',
-        name: 'transcriptId',
-        type: 'string',
-        default: '',
-        description: 'Filter bites by transcript ID',
-      },
-    ],
   },
   {
     displayName: 'Additional Fields',
