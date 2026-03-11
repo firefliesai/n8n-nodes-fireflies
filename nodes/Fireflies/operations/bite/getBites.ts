@@ -4,8 +4,8 @@ import { getBitesQuery, handleOperationError } from '../../helpers';
 
 export async function getBites(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
-    const limit = ef.getNodeParameter('limit', index, 10) as number;
-    const skip = ef.getNodeParameter('skip', index, 0) as number;
+    const limit = ef.getNodeParameter('limit', index, undefined) as number | undefined;
+    const skip = ef.getNodeParameter('skip', index, undefined) as number | undefined;
 
     const additionalFields = ef.getNodeParameter('additionalFields', index, {}) as {
       mine?: boolean;
@@ -14,8 +14,8 @@ export async function getBites(ef: IExecuteFunctions, index: number): Promise<IN
     };
 
     const variables: Record<string, any> = {
-      limit,
-      skip,
+      ...(limit !== undefined && { limit }),
+      ...(skip !== undefined && { skip }),
       ...(additionalFields.mine !== undefined && { mine: additionalFields.mine }),
       ...(additionalFields.transcriptId && { transcriptId: additionalFields.transcriptId }),
       ...(additionalFields.myTeam !== undefined && { myTeam: additionalFields.myTeam }),

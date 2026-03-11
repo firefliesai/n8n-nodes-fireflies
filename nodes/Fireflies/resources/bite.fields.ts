@@ -154,7 +154,7 @@ export const biteFields: INodeProperties[] = [
         name: 'privacies',
         type: 'string',
         default: '',
-        description: 'Comma-separated list, e.g. PUBLIC,PRIVATE',
+        description: 'Comma-separated list of privacy values, e.g. public,team,participants',
       },
       {
         displayName: 'Summary',
