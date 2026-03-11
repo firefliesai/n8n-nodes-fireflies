@@ -14,8 +14,8 @@ export async function getBites(ef: IExecuteFunctions, index: number): Promise<IN
     };
 
     const variables: Record<string, any> = {
-      ...(limit !== undefined && { limit }),
-      ...(skip !== undefined && { skip }),
+      ...(limit !== undefined && limit > 0 && { limit }),
+      ...(skip !== undefined && skip > 0 && { skip }),
       ...(additionalFields.mine !== undefined && { mine: additionalFields.mine }),
       ...(additionalFields.transcriptId && { transcriptId: additionalFields.transcriptId }),
       ...(additionalFields.myTeam !== undefined && { myTeam: additionalFields.myTeam }),
