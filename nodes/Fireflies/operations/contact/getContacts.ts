@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getContactsQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getContactsQuery, handleOperationError } from '../../helpers';
 
 export async function getContacts(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
 	try {

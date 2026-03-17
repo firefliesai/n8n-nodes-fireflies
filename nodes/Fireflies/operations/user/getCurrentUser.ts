@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getCurrentUserQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getCurrentUserQuery, handleOperationError } from '../../helpers';
 
 export async function getCurrentUser(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {

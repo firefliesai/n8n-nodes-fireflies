@@ -19,7 +19,7 @@ export async function getBites(ef: IExecuteFunctions, index: number): Promise<IN
     }
 
     const response = await callGraphQLApi.call(ef, getBitesQuery, variables);
-    return response.bites.map((bite: Record<string, any>) => ({
+    return (response.bites ?? []).map((bite: Record<string, any>) => ({
       json: {
         success: true,
         data: bite,

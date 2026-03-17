@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getUserGroupsQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getUserGroupsQuery, handleOperationError } from '../../helpers';
 
 export async function getUserGroups(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {

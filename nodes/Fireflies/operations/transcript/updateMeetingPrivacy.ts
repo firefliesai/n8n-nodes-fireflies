@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { updateMeetingPrivacyMutation } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { updateMeetingPrivacyMutation, handleOperationError } from '../../helpers';
 
 export async function updateMeetingPrivacy(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {

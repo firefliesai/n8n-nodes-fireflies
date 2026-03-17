@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { updateMeetingChannelMutation } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { updateMeetingChannelMutation, handleOperationError } from '../../helpers';
 
 export async function updateMeetingChannel(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {

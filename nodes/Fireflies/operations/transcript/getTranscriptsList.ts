@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptsListQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getTranscriptsListQuery, handleOperationError } from '../../helpers';
 
 export async function getTranscriptsList(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
@@ -47,7 +46,7 @@ export async function getTranscriptsList(ef: IExecuteFunctions, index: number): 
 
     const response = await callGraphQLApi.call(ef, getTranscriptsListQuery, variables);
 
-    return response.transcripts.map((transcript: any) => ({
+    return (response.transcripts ?? []).map((transcript: any) => ({
       json: {
         success: true,
         data: transcript,

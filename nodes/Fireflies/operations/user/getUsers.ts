@@ -1,13 +1,12 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getUsersQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getUsersQuery, handleOperationError } from '../../helpers';
 
 export async function getUsers(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
     const response = await callGraphQLApi.call(ef, getUsersQuery, {});
 
-    return response.users.map((user: any) => ({
+    return (response.users ?? []).map((user: any) => ({
       json: {
         success: true,
         data: user,

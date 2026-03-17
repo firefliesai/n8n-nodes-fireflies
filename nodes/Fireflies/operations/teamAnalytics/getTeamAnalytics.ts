@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTeamAnalyticsQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getTeamAnalyticsQuery, handleOperationError } from '../../helpers';
 
 export async function getTeamAnalytics(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
 	try {

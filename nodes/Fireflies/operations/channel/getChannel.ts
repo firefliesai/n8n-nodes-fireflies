@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getChannelQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getChannelQuery, handleOperationError } from '../../helpers';
 
 export async function getChannel(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {

@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { shareMeetingMutation } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { shareMeetingMutation, handleOperationError } from '../../helpers';
 
 export async function shareMeeting(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {

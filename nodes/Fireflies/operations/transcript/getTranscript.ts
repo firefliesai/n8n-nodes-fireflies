@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getTranscriptQuery, handleOperationError } from '../../helpers';
 
 export async function getTranscript(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {

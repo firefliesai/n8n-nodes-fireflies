@@ -8,6 +8,10 @@ export async function createBite(ef: IExecuteFunctions, index: number): Promise<
     const startTime = ef.getNodeParameter('startTime', index) as number;
     const endTime = ef.getNodeParameter('endTime', index) as number;
 
+    if (startTime < 0 || endTime <= startTime) {
+      throw new Error('Invalid bite range: endTime must be greater than startTime, and startTime must be non-negative');
+    }
+
     const additionalFields = ef.getNodeParameter('additionalFields', index, {}) as {
       name?: string;
       mediaType?: string;

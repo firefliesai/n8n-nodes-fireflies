@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getActiveMeetingsQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getActiveMeetingsQuery, handleOperationError } from '../../helpers';
 
 export async function getActiveMeetings(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
 	try {

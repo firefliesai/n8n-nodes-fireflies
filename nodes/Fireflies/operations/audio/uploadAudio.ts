@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { uploadAudioMutation } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { uploadAudioMutation, handleOperationError } from '../../helpers';
 
 export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
@@ -16,7 +15,7 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
       client_reference_id?: string;
       custom_language?: string;
       download_auth?: {
-        authValues?: Array<{ type: string; token?: string; username?: string; password?: string }>;
+        authValues?: { type: string; token?: string; username?: string; password?: string };
       };
       save_video?: boolean;
       webhook?: string;
@@ -55,15 +54,22 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
       input.bypass_size_check = additionalFields.bypass_size_check;
     }
 
-    if (additionalFields.download_auth?.authValues?.length) {
-      const auth = additionalFields.download_auth.authValues[0];
-      const downloadAuth: Record<string, any> = { type: auth.type };
+    if (additionalFields.download_auth?.authValues) {
+      const auth = additionalFields.download_auth.authValues;
+      let downloadAuth: Record<string, any> | undefined;
+
       if (auth.type === 'bearer' && auth.token) {
-        downloadAuth.bearer = { token: auth.token };
-      } else if (auth.type === 'basic' && (auth.username || auth.password)) {
-        downloadAuth.basic = { username: auth.username ?? '', password: auth.password ?? '' };
+        downloadAuth = { type: 'bearer', bearer: { token: auth.token } };
+      } else if (auth.type === 'basic' && auth.username && auth.password) {
+        downloadAuth = {
+          type: 'basic',
+          basic: { username: auth.username, password: auth.password },
+        };
       }
-      input.download_auth = downloadAuth;
+
+      if (downloadAuth) {
+        input.download_auth = downloadAuth;
+      }
     }
 
     const response = await callGraphQLApi.call(ef, uploadAudioMutation, { input });

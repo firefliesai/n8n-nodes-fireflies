@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { setUserRoleMutation } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { setUserRoleMutation, handleOperationError } from '../../helpers';
 
 export async function setUserRole(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
