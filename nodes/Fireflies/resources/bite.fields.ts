@@ -33,6 +33,9 @@ export const biteFields: INodeProperties[] = [
     displayName: 'Start Time',
     name: 'startTime',
     type: 'number',
+    typeOptions: {
+      minValue: 0,
+    },
     required: true,
     default: 0,
     displayOptions: {
@@ -47,6 +50,9 @@ export const biteFields: INodeProperties[] = [
     displayName: 'End Time',
     name: 'endTime',
     type: 'number',
+    typeOptions: {
+      minValue: 0,
+    },
     required: true,
     default: 0,
     displayOptions: {
@@ -123,6 +129,9 @@ export const biteFields: INodeProperties[] = [
     displayName: 'Skip',
     name: 'skip',
     type: 'number',
+    typeOptions: {
+      minValue: 0,
+    },
     default: 0,
     description: 'Number of results to skip for pagination',
     displayOptions: {

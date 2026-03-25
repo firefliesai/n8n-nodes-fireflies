@@ -4,7 +4,7 @@ import { getContactsQuery, handleOperationError } from '../../helpers';
 
 export async function getContacts(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
 	try {
-		const response = await callGraphQLApi.call(ef, getContactsQuery, {});
+		const response = await callGraphQLApi.call(ef, getContactsQuery);
 
 		return (response.contacts ?? []).map((contact: Record<string, any>) => ({
 			json: {

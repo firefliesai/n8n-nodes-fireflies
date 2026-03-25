@@ -40,8 +40,14 @@ export async function getTranscriptsList(ef: IExecuteFunctions, index: number): 
     if (filters.mine !== undefined) variables.mine = filters.mine;
     if (filters.keyword) variables.keyword = filters.keyword;
     if (filters.scope) variables.scope = filters.scope;
-    if (filters.organizers) variables.organizers = filters.organizers.split(',').map((s) => s.trim()).filter(Boolean);
-    if (filters.participants) variables.participants = filters.participants.split(',').map((s) => s.trim()).filter(Boolean);
+    if (filters.organizers) {
+      const organizers = filters.organizers.split(',').map((s) => s.trim()).filter(Boolean);
+      if (organizers.length > 0) variables.organizers = organizers;
+    }
+    if (filters.participants) {
+      const participants = filters.participants.split(',').map((s) => s.trim()).filter(Boolean);
+      if (participants.length > 0) variables.participants = participants;
+    }
     if (filters.channelId) variables.channelId = filters.channelId;
 
     const response = await callGraphQLApi.call(ef, getTranscriptsListQuery, variables);

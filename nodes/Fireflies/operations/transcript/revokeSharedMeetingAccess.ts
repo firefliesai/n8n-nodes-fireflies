@@ -8,6 +8,9 @@ export async function revokeSharedMeetingAccess(ef: IExecuteFunctions, index: nu
     const emails = ef.getNodeParameter('emails', index) as string;
 
     const emailArray = emails.split(',').map((e) => e.trim()).filter(Boolean);
+    if (emailArray.length === 0) {
+      throw new Error('At least one valid email address is required');
+    }
 
     const response = await callGraphQLApi.call(ef, revokeSharedMeetingAccessMutation, {
       input: { id: transcriptId, emails: emailArray },

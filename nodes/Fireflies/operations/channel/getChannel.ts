@@ -8,6 +8,10 @@ export async function getChannel(ef: IExecuteFunctions, index: number): Promise<
 
     const response = await callGraphQLApi.call(ef, getChannelQuery, { id: channelId });
 
+    if (!response?.channel) {
+      throw new Error(`Channel not found for id: ${channelId}`);
+    }
+
     return {
       json: {
         success: true,

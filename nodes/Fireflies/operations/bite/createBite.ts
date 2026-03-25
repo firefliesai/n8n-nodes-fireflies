@@ -22,7 +22,10 @@ export async function createBite(ef: IExecuteFunctions, index: number): Promise<
     const variables: Record<string, any> = { transcriptId, startTime, endTime };
     if (additionalFields.name) variables.name = additionalFields.name;
     if (additionalFields.mediaType) variables.mediaType = additionalFields.mediaType;
-    if (additionalFields.privacies) variables.privacies = additionalFields.privacies.split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (additionalFields.privacies) {
+      const privacies = additionalFields.privacies.split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (privacies.length > 0) variables.privacies = privacies;
+    }
     if (additionalFields.summary) variables.summary = additionalFields.summary;
 
     const response = await callGraphQLApi.call(ef, createBiteMutation, variables);

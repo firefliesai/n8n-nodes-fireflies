@@ -11,6 +11,9 @@ export async function shareMeeting(ef: IExecuteFunctions, index: number): Promis
     };
 
     const emailArray = emails.split(',').map((e) => e.trim()).filter(Boolean);
+    if (emailArray.length === 0) {
+      throw new Error('At least one recipient email is required');
+    }
 
     const input: Record<string, any> = {
       id: transcriptId,
@@ -23,10 +26,11 @@ export async function shareMeeting(ef: IExecuteFunctions, index: number): Promis
 
     const response = await callGraphQLApi.call(ef, shareMeetingMutation, { input });
 
+    const shareResult = response.shareMeeting;
     return {
       json: {
-        success: true,
-        data: response.shareMeeting,
+        success: Boolean(shareResult?.success),
+        data: shareResult,
       },
     };
   } catch (error) {

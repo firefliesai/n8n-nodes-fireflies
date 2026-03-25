@@ -17,7 +17,7 @@ export async function addToLiveMeeting(ef: IExecuteFunctions, index: number): Pr
 			meetingLink,
 			...(additionalFields.title && { title: additionalFields.title }),
 			...(additionalFields.meetingPassword && { meetingPassword: additionalFields.meetingPassword }),
-			...(additionalFields.duration && { duration: additionalFields.duration }),
+			...(additionalFields.duration !== undefined && { duration: additionalFields.duration }),
 			...(additionalFields.language && { language: additionalFields.language }),
 		};
 
