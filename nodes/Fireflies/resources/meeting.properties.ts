@@ -13,7 +13,7 @@ export const meetingOperations: INodeProperties = {
 	options: [
 		{
 			name: 'Add to Live Meeting',
-			action: 'Add Fred to a live meeting',
+			action: 'Add fred to a live meeting',
 			description: 'Add the Fireflies bot to an active meeting',
 			value: 'addToLiveMeeting',
 		},

@@ -116,6 +116,7 @@ export const biteFields: INodeProperties[] = [
     typeOptions: {
       minValue: 1,
     },
+    // eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
     default: 10,
     description: 'Max number of results to return',
     displayOptions: {
