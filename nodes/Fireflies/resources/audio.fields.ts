@@ -78,6 +78,13 @@ export const audioFields: INodeProperties[] = [
         ],
       },
       {
+        displayName: 'Bypass Size Check',
+        name: 'bypass_size_check',
+        type: 'boolean',
+        default: false,
+        description: 'Whether to bypass the file size check',
+      },
+      {
         displayName: 'Client Reference ID',
         name: 'client_reference_id',
         type: 'string',
@@ -85,11 +92,11 @@ export const audioFields: INodeProperties[] = [
         description: 'Custom identifier for the recording',
       },
       {
-        displayName: 'Bypass Size Check',
-        name: 'bypass_size_check',
-        type: 'boolean',
-        default: false,
-        description: 'Whether to bypass the file size check',
+        displayName: 'Custom Language',
+        name: 'custom_language',
+        type: 'string',
+        default: '',
+        description: 'Specify a language for transcription',
       },
       {
         displayName: 'Download Auth',
@@ -139,13 +146,6 @@ export const audioFields: INodeProperties[] = [
             ],
           },
         ],
-      },
-      {
-        displayName: 'Custom Language',
-        name: 'custom_language',
-        type: 'string',
-        default: '',
-        description: 'Specify a language for transcription',
       },
       {
         displayName: 'Save Video',
