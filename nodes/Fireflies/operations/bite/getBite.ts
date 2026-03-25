@@ -1,15 +1,17 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getCurrentUserQuery, handleOperationError } from '../../helpers';
+import { getBiteQuery, handleOperationError } from '../../helpers';
 
-export async function getCurrentUser(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
+export async function getBite(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
-    const response = await callGraphQLApi.call(ef, getCurrentUserQuery);
+    const biteId = ef.getNodeParameter('biteId', index) as string;
+
+    const response = await callGraphQLApi.call(ef, getBiteQuery, { id: biteId });
 
     return {
       json: {
         success: true,
-        data: response.user,
+        data: response.bite,
       },
     };
   } catch (error) {
@@ -17,7 +19,7 @@ export async function getCurrentUser(ef: IExecuteFunctions, index: number): Prom
       ef.getNode(),
       error,
       ef.continueOnFail(),
-      'getCurrentUser'
+      'getBite'
     );
 
     return {

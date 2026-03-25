@@ -1,17 +1,20 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptAnalyticsQuery, handleOperationError } from '../../helpers';
+import { updateMeetingTitleMutation, handleOperationError } from '../../helpers';
 
-export async function getTranscriptAnalytics(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
+export async function updateMeetingTitle(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
     const transcriptId = ef.getNodeParameter('transcriptId', index) as string;
+    const title = ef.getNodeParameter('title', index) as string;
 
-    const response = await callGraphQLApi.call(ef, getTranscriptAnalyticsQuery, { transcriptId });
+    const response = await callGraphQLApi.call(ef, updateMeetingTitleMutation, {
+      input: { id: transcriptId, title },
+    });
 
     return {
       json: {
         success: true,
-        data: response.transcript,
+        data: response.updateMeetingTitle,
       },
     };
   } catch (error) {
@@ -19,7 +22,7 @@ export async function getTranscriptAnalytics(ef: IExecuteFunctions, index: numbe
       ef.getNode(),
       error,
       ef.continueOnFail(),
-      'getTranscriptAnalytics'
+      'updateMeetingTitle'
     );
 
     return {

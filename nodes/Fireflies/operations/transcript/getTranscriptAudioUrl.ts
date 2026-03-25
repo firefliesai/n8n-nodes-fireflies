@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptAudioUrlQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getTranscriptAudioUrlQuery, handleOperationError } from '../../helpers';
 
 export async function getTranscriptAudioUrl(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {

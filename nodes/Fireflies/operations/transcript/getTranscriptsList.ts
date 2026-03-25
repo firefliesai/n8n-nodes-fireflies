@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptsListQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getTranscriptsListQuery, handleOperationError } from '../../helpers';
 
 export async function getTranscriptsList(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
   try {
@@ -18,6 +17,11 @@ export async function getTranscriptsList(ef: IExecuteFunctions, index: number): 
       participantEmail?: string;
       userId?: string;
       mine?: boolean;
+      keyword?: string;
+      scope?: string;
+      organizers?: string;
+      participants?: string;
+      channelId?: string;
     };
 
     const variables: Record<string, any> = {
@@ -34,10 +38,21 @@ export async function getTranscriptsList(ef: IExecuteFunctions, index: number): 
     if (filters.participantEmail) variables.participantEmail = filters.participantEmail;
     if (filters.userId) variables.userId = filters.userId;
     if (filters.mine !== undefined) variables.mine = filters.mine;
+    if (filters.keyword) variables.keyword = filters.keyword;
+    if (filters.scope) variables.scope = filters.scope;
+    if (filters.organizers) {
+      const organizers = filters.organizers.split(',').map((s) => s.trim()).filter(Boolean);
+      if (organizers.length > 0) variables.organizers = organizers;
+    }
+    if (filters.participants) {
+      const participants = filters.participants.split(',').map((s) => s.trim()).filter(Boolean);
+      if (participants.length > 0) variables.participants = participants;
+    }
+    if (filters.channelId) variables.channelId = filters.channelId;
 
     const response = await callGraphQLApi.call(ef, getTranscriptsListQuery, variables);
 
-    return response.transcripts.map((transcript: any) => ({
+    return (response.transcripts ?? []).map((transcript: any) => ({
       json: {
         success: true,
         data: transcript,

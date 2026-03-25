@@ -1,7 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { getTranscriptVideoUrlQuery } from '../../helpers';
-import { handleOperationError } from '../../helpers';
+import { getTranscriptVideoUrlQuery, handleOperationError } from '../../helpers';
 
 export async function getTranscriptVideoUrl(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
