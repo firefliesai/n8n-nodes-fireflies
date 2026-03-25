@@ -16,10 +16,11 @@ export async function revokeSharedMeetingAccess(ef: IExecuteFunctions, index: nu
       input: { id: transcriptId, emails: emailArray },
     });
 
+    const result = response.revokeSharedMeetingAccess;
     return {
       json: {
-        success: true,
-        data: response.revokeSharedMeetingAccess,
+        success: Boolean(result?.success),
+        data: result,
       },
     };
   } catch (error) {

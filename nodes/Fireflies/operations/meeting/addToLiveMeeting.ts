@@ -23,10 +23,11 @@ export async function addToLiveMeeting(ef: IExecuteFunctions, index: number): Pr
 
 		const response = await callGraphQLApi.call(ef, addToLiveMeetingMutation, variables);
 
+		const result = response.addToLiveMeeting;
 		return {
 			json: {
-				success: true,
-				data: response.addToLiveMeeting,
+				success: Boolean(result?.success),
+				data: result,
 			},
 		};
 	} catch (error) {
