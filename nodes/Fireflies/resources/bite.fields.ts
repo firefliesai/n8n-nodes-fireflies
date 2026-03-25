@@ -116,7 +116,7 @@ export const biteFields: INodeProperties[] = [
     typeOptions: {
       minValue: 1,
     },
-    default: 10,
+    default: 50,
     description: 'Max number of results to return',
     displayOptions: {
       show: {

@@ -33,7 +33,7 @@ const resourcesOptions: INodeProperties = {
     { name: 'Channel', value: 'channel' },
     { name: 'Contact', value: 'contact' },
     { name: 'Meeting', value: 'meeting' },
-    { name: 'Team Analytics', value: 'teamAnalytics' },
+    { name: 'Team Analytic', value: 'teamAnalytics' },
     { name: 'Transcript', value: 'transcript' },
     { name: 'User', value: 'user' },
   ],

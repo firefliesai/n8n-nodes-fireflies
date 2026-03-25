@@ -62,6 +62,13 @@ export const transcriptFields: INodeProperties[] = [
     },
     options: [
       {
+        displayName: 'Channel ID',
+        name: 'channelId',
+        type: 'string',
+        default: '',
+        description: 'Filter by channel ID',
+      },
+      {
         displayName: 'Date',
         name: 'date',
         type: 'number',
@@ -70,13 +77,6 @@ export const transcriptFields: INodeProperties[] = [
         },
         default: undefined,
         description: 'Filter by timestamp',
-      },
-      {
-        displayName: 'Channel ID',
-        name: 'channelId',
-        type: 'string',
-        default: '',
-        description: 'Filter by channel ID',
       },
       {
         displayName: 'From Date',
@@ -125,13 +125,6 @@ export const transcriptFields: INodeProperties[] = [
         default: '',
       },
       {
-        displayName: 'Title',
-        name: 'title',
-        type: 'string',
-        default: '',
-        description: 'Filter transcripts by title',
-      },
-      {
         displayName: 'Participants',
         name: 'participants',
         type: 'string',
@@ -144,6 +137,13 @@ export const transcriptFields: INodeProperties[] = [
         type: 'string',
         default: '',
         description: 'Filter scope',
+      },
+      {
+        displayName: 'Title',
+        name: 'title',
+        type: 'string',
+        default: '',
+        description: 'Filter transcripts by title',
       },
       {
         displayName: 'To Date',
