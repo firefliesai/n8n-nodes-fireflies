@@ -4,11 +4,23 @@ import { updateMeetingChannelMutation, handleOperationError } from '../../helper
 
 export async function updateMeetingChannel(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
   try {
-    const transcriptId = ef.getNodeParameter('transcriptId', index) as string;
+    const transcriptIdsRaw = ef.getNodeParameter('transcriptIds', index) as string;
     const channelId = ef.getNodeParameter('channelId', index) as string;
 
+    const transcriptIds = transcriptIdsRaw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    if (transcriptIds.length === 0) {
+      throw new Error('At least one transcript ID is required');
+    }
+    if (transcriptIds.length > 5) {
+      throw new Error('updateMeetingChannel accepts at most 5 transcript IDs per call');
+    }
+
     const response = await callGraphQLApi.call(ef, updateMeetingChannelMutation, {
-      input: { id: transcriptId, channel_id: channelId },
+      input: { transcript_ids: transcriptIds, channel_id: channelId },
     });
 
     return {

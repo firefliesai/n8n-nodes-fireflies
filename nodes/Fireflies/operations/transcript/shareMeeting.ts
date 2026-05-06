@@ -7,7 +7,7 @@ export async function shareMeeting(ef: IExecuteFunctions, index: number): Promis
     const transcriptId = ef.getNodeParameter('transcriptId', index) as string;
     const emails = ef.getNodeParameter('emails', index) as string;
     const additionalFields = ef.getNodeParameter('additionalFields', index, {}) as {
-      expiresAt?: string;
+      expiryDays?: number;
     };
 
     const emailArray = emails.split(',').map((e) => e.trim()).filter(Boolean);
@@ -16,12 +16,12 @@ export async function shareMeeting(ef: IExecuteFunctions, index: number): Promis
     }
 
     const input: Record<string, any> = {
-      id: transcriptId,
+      meeting_id: transcriptId,
       emails: emailArray,
     };
 
-    if (additionalFields.expiresAt) {
-      input.expires_at = additionalFields.expiresAt;
+    if (additionalFields.expiryDays) {
+      input.expiry_days = additionalFields.expiryDays;
     }
 
     const response = await callGraphQLApi.call(ef, shareMeetingMutation, { input });

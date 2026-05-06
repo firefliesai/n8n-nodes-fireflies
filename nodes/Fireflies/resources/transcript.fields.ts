@@ -12,7 +12,7 @@ export const transcriptFields: INodeProperties[] = [
     displayOptions: {
       show: {
         resource: ['transcript'],
-        operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary', 'getTranscriptAudioUrl', 'getTranscriptVideoUrl', 'deleteTranscript', 'updateMeetingTitle', 'updateMeetingPrivacy', 'updateMeetingChannel', 'shareMeeting', 'revokeSharedMeetingAccess'],
+        operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary', 'getTranscriptAudioUrl', 'getTranscriptVideoUrl', 'deleteTranscript', 'updateMeetingTitle', 'updateMeetingPrivacy', 'shareMeeting', 'revokeSharedMeetingAccess'],
       },
     },
     description: 'ID of the transcript to operate on',
@@ -200,6 +200,22 @@ export const transcriptFields: INodeProperties[] = [
     description: 'Privacy setting for the meeting',
   },
 
+  // Transcript IDs field for updateMeetingChannel (accepts 1-5 IDs)
+  {
+    displayName: 'Transcript IDs',
+    name: 'transcriptIds',
+    type: 'string',
+    required: true,
+    default: '',
+    displayOptions: {
+      show: {
+        resource: ['transcript'],
+        operation: ['updateMeetingChannel'],
+      },
+    },
+    description: 'Comma-separated list of 1–5 transcript IDs to move to the channel',
+  },
+
   // Channel ID field for updateMeetingChannel
   {
     displayName: 'Channel ID',
@@ -247,11 +263,16 @@ export const transcriptFields: INodeProperties[] = [
     },
     options: [
       {
-        displayName: 'Expires At',
-        name: 'expiresAt',
-        type: 'string',
-        default: '',
-        description: 'Expiry date for the shared access (ISO format)',
+        displayName: 'Expiry Days',
+        name: 'expiryDays',
+        type: 'options',
+        options: [
+          { name: '7 Days', value: 7 },
+          { name: '14 Days', value: 14 },
+          { name: '30 Days', value: 30 },
+        ],
+        default: 7,
+        description: 'Number of days before the shared access expires (must be 7, 14, or 30)',
       },
     ],
   },

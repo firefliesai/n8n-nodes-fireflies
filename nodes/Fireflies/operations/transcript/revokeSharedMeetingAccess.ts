@@ -12,15 +12,24 @@ export async function revokeSharedMeetingAccess(ef: IExecuteFunctions, index: nu
       throw new Error('At least one valid email address is required');
     }
 
-    const response = await callGraphQLApi.call(ef, revokeSharedMeetingAccessMutation, {
-      input: { id: transcriptId, emails: emailArray },
-    });
+    const results: Array<{ email: string; success: boolean; message?: string }> = [];
 
-    const result = response.revokeSharedMeetingAccess;
+    for (const email of emailArray) {
+      const response = await callGraphQLApi.call(ef, revokeSharedMeetingAccessMutation, {
+        input: { meeting_id: transcriptId, email },
+      });
+      const result = response.revokeSharedMeetingAccess;
+      results.push({
+        email,
+        success: Boolean(result?.success),
+        message: result?.message,
+      });
+    }
+
     return {
       json: {
-        success: Boolean(result?.success),
-        data: result,
+        success: results.every((r) => r.success),
+        data: results,
       },
     };
   } catch (error) {
