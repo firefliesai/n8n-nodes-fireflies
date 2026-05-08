@@ -673,6 +673,9 @@ export const updateMeetingChannelMutation = `
     updateMeetingChannel(input: $input) {
       id
       title
+      channels {
+        id
+      }
     }
   }
 `;
