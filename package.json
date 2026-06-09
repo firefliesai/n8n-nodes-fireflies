@@ -50,5 +50,8 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
+  },
+  "overrides": {
+    "axios": "^1.16.0"
   }
 }
