@@ -77,7 +77,7 @@ jobs:
 
       # Trusted publishing (OIDC) requires npm >= 11.5; pinned exact version
       - name: Update npm
-        run: npm install -g npm@12.0.1
+        run: npm install -g npm@11.6.2
 
       # Authenticates via npm trusted publishing (GitHub OIDC) — no token
       # secret. --provenance makes the publish fail if the provenance
