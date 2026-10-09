@@ -44,7 +44,10 @@ jobs:
           VERSION="$(node -p "require('./package.json').version")"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-          echo "published=$(.github/release-notes/npm-published.sh "$NAME@$VERSION")" >> "$GITHUB_OUTPUT"
+          # Standalone assignment so a failed probe fails the step (inside
+          # echo's argument its exit status would be lost)
+          PUBLISHED="$(.github/release-notes/npm-published.sh "$NAME@$VERSION")"
+          echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
 
           if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             echo "released=true" >> "$GITHUB_OUTPUT"
@@ -189,8 +192,15 @@ jobs:
           # Only the highest version becomes "Latest": a release recovered
           # for an older version must not displace a newer one
           CURRENT="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null || echo v0.0.0)"
-          HIGHEST="$(printf '%s\n%s\n' "${CURRENT#v}" "$VERSION" | sort -V | tail -n 1)"
-          if [ "$HIGHEST" = "$VERSION" ]; then LATEST=true; else LATEST=false; fi
+          # sort -V ranks 2.4.0-rc.1 above 2.4.0; with '-' as '~' it ranks
+          # below, as SemVer does. A prerelease never becomes Latest.
+          CURRENT_KEY="$(printf '%s' "${CURRENT#v}" | tr '-' '~')"
+          VERSION_KEY="$(printf '%s' "$VERSION" | tr '-' '~')"
+          HIGHEST="$(printf '%s\n%s\n' "$CURRENT_KEY" "$VERSION_KEY" | sort -V | tail -n 1)"
+          case "$VERSION" in
+            *-*) LATEST=false ;;
+            *) if [ "$HIGHEST" = "$VERSION_KEY" ]; then LATEST=true; else LATEST=false; fi ;;
+          esac
 
           tail -n +2 ".github/release-notes/$VERSION.md" > "$NOTES"
 
