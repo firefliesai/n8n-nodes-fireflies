@@ -68,11 +68,10 @@ export async function fetchCursorPages<T>(
       return { items, has_more: result.has_more, next_cursor: result.next_cursor };
     }
     if (result.next_cursor === cursor) {
-      // An API that hands back the cursor it was given would loop to MAX_PAGES,
-      // spending rate-limit budget on the same page; fail instead.
-      throw new Error(
-        `Pagination cursor did not advance (${cursor}); the API returned the same page again.`,
-      );
+      // The API handed back the cursor it was given: following it would
+      // re-fetch the same page until MAX_PAGES. Stop here and keep what was
+      // fetched, flagged like a capped run so the set is not taken as complete.
+      return { items, has_more: true, next_cursor: cursor ?? null, truncated: true };
     }
     cursor = result.next_cursor;
   }

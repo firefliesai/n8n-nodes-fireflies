@@ -363,7 +363,7 @@ describe('cursor-paginated resources', () => {
     });
   });
 
-  it('fails instead of re-fetching when the cursor does not advance', async () => {
+  it('stops on a cursor that does not advance, keeping what was fetched', async () => {
     const stuck = ok({ auditEvents: { events: [event('1')], has_more: true, next_cursor: 'c1' } });
     const { ef, requests } = harness({ category: 'AUTHENTICATION', returnAll: true }, [
       ok({ auditEvents: { events: [event('0')], has_more: true, next_cursor: 'c1' } }),
@@ -371,10 +371,11 @@ describe('cursor-paginated resources', () => {
       stuck,
     ]);
 
-    await expect(run('auditEvent', 'getAuditEvents', ef)).rejects.toThrow(
-      'Pagination cursor did not advance (c1)',
-    );
+    const output = await run('auditEvent', 'getAuditEvents', ef);
+
     expect(requests).toHaveLength(2);
+    expect(output.map((o: any) => o.json.data.id)).toEqual(['0', '1']);
+    expect(output[0].json.page).toEqual({ has_more: true, next_cursor: 'c1', truncated: true });
   });
 
   it('keeps the pages already fetched when a later page is rate limited', async () => {
