@@ -158,9 +158,13 @@ export const biteFields: INodeProperties[] = [
       {
         displayName: 'Media Type',
         name: 'mediaType',
-        type: 'string',
-        default: '',
-        description: 'Media type for the bite',
+        type: 'options',
+        options: [
+          { name: 'Audio', value: 'audio' },
+          { name: 'Video', value: 'video' },
+        ],
+        default: 'video',
+        description: 'Whether the bite is an audio or a video clip',
       },
       {
         displayName: 'Name',
@@ -174,7 +178,7 @@ export const biteFields: INodeProperties[] = [
         name: 'privacies',
         type: 'string',
         default: '',
-        description: 'Comma-separated list of privacy values, e.g. public,team,participants',
+        description: 'Comma-separated privacy values: public, team, participants',
       },
       {
         displayName: 'Summary',

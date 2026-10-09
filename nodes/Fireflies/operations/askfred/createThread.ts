@@ -2,7 +2,10 @@ import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
 import { createAskFredThreadMutation, handleOperationError } from '../../helpers';
 
-export async function createThread(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
+export async function createThread(
+  ef: IExecuteFunctions,
+  index: number,
+): Promise<INodeExecutionData> {
   try {
     const query = ef.getNodeParameter('query', index) as string;
 
@@ -10,6 +13,7 @@ export async function createThread(ef: IExecuteFunctions, index: number): Promis
       transcriptId?: string;
       responseLanguage?: string;
       formatMode?: string;
+      generateSuggestions?: boolean;
     };
 
     const meetingFilters = ef.getNodeParameter('meetingFilters', index, {}) as {
@@ -37,10 +41,18 @@ export async function createThread(ef: IExecuteFunctions, index: number): Promis
       input.format_mode = additionalFields.formatMode;
     }
 
+    if (additionalFields.generateSuggestions !== undefined) {
+      input.generate_suggestions = additionalFields.generateSuggestions;
+    }
+
     // Build filters object if any filter is provided
-    const hasFilters = meetingFilters.startTime || meetingFilters.endTime ||
-      meetingFilters.channelIds || meetingFilters.organizers ||
-      meetingFilters.participants || meetingFilters.transcriptIds;
+    const hasFilters =
+      meetingFilters.startTime ||
+      meetingFilters.endTime ||
+      meetingFilters.channelIds ||
+      meetingFilters.organizers ||
+      meetingFilters.participants ||
+      meetingFilters.transcriptIds;
 
     if (hasFilters) {
       const filters: Record<string, any> = {};
@@ -54,19 +66,31 @@ export async function createThread(ef: IExecuteFunctions, index: number): Promis
       }
 
       if (meetingFilters.channelIds) {
-        filters.channel_ids = meetingFilters.channelIds.split(',').map(id => id.trim()).filter(id => id);
+        filters.channel_ids = meetingFilters.channelIds
+          .split(',')
+          .map((id) => id.trim())
+          .filter((id) => id);
       }
 
       if (meetingFilters.organizers) {
-        filters.organizers = meetingFilters.organizers.split(',').map(email => email.trim()).filter(email => email);
+        filters.organizers = meetingFilters.organizers
+          .split(',')
+          .map((email) => email.trim())
+          .filter((email) => email);
       }
 
       if (meetingFilters.participants) {
-        filters.participants = meetingFilters.participants.split(',').map(email => email.trim()).filter(email => email);
+        filters.participants = meetingFilters.participants
+          .split(',')
+          .map((email) => email.trim())
+          .filter((email) => email);
       }
 
       if (meetingFilters.transcriptIds) {
-        filters.transcript_ids = meetingFilters.transcriptIds.split(',').map(id => id.trim()).filter(id => id);
+        filters.transcript_ids = meetingFilters.transcriptIds
+          .split(',')
+          .map((id) => id.trim())
+          .filter((id) => id);
       }
 
       input.filters = filters;
@@ -85,7 +109,7 @@ export async function createThread(ef: IExecuteFunctions, index: number): Promis
       ef.getNode(),
       error,
       ef.continueOnFail(),
-      'createThread'
+      'createThread',
     );
 
     return {

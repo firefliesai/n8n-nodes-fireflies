@@ -1,45 +1,56 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { addToLiveMeetingMutation, handleOperationError } from '../../helpers';
+import { addToLiveMeetingMutation, handleOperationError, toAttendeeInputs } from '../../helpers';
 
-export async function addToLiveMeeting(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
-	try {
-		const meetingLink = ef.getNodeParameter('meetingLink', index) as string;
+export async function addToLiveMeeting(
+  ef: IExecuteFunctions,
+  index: number,
+): Promise<INodeExecutionData> {
+  try {
+    const meetingLink = ef.getNodeParameter('meetingLink', index) as string;
 
-		const additionalFields = ef.getNodeParameter('additionalFields', index, {}) as {
-			title?: string;
-			meetingPassword?: string;
-			duration?: number;
-			language?: string;
-		};
+    const additionalFields = ef.getNodeParameter('additionalFields', index, {}) as {
+      title?: string;
+      meetingPassword?: string;
+      duration?: number;
+      language?: string;
+      attendees?: {
+        attendeeValues?: Array<{ displayName?: string; email?: string; phoneNumber?: string }>;
+      };
+    };
 
-		const variables: Record<string, any> = {
-			meetingLink,
-			...(additionalFields.title && { title: additionalFields.title }),
-			...(additionalFields.meetingPassword && { meetingPassword: additionalFields.meetingPassword }),
-			...(additionalFields.duration !== undefined && { duration: additionalFields.duration }),
-			...(additionalFields.language && { language: additionalFields.language }),
-		};
+    const variables: Record<string, any> = {
+      meetingLink,
+      ...(additionalFields.title && { title: additionalFields.title }),
+      ...(additionalFields.meetingPassword && {
+        meetingPassword: additionalFields.meetingPassword,
+      }),
+      ...(additionalFields.duration !== undefined && { duration: additionalFields.duration }),
+      ...(additionalFields.language && { language: additionalFields.language }),
+    };
 
-		const response = await callGraphQLApi.call(ef, addToLiveMeetingMutation, variables);
+    const attendees = toAttendeeInputs(additionalFields.attendees?.attendeeValues);
+    if (attendees.length) variables.attendees = attendees;
 
-		const result = response.addToLiveMeeting;
-		return {
-			json: {
-				success: Boolean(result?.success),
-				data: result,
-			},
-		};
-	} catch (error) {
-		const errorResponse = handleOperationError(
-			ef.getNode(),
-			error,
-			ef.continueOnFail(),
-			'addToLiveMeeting',
-		);
+    const response = await callGraphQLApi.call(ef, addToLiveMeetingMutation, variables);
 
-		return {
-			json: errorResponse,
-		};
-	}
+    const result = response.addToLiveMeeting;
+    return {
+      json: {
+        success: Boolean(result?.success),
+        data: result,
+      },
+    };
+  } catch (error) {
+    const errorResponse = handleOperationError(
+      ef.getNode(),
+      error,
+      ef.continueOnFail(),
+      'addToLiveMeeting',
+    );
+
+    return {
+      json: errorResponse,
+    };
+  }
 }

@@ -17,6 +17,13 @@ export const audioOperations: INodeProperties = {
       description: 'Upload an audio file for transcription',
       value: 'uploadAudio',
     },
+    {
+      name: 'Upload File',
+      action: 'Upload a binary file',
+      description:
+        'Upload a binary audio or video file directly for transcription. Requires direct-upload access, which is not generally available.',
+      value: 'uploadFile',
+    },
   ],
   default: 'uploadAudio',
 };

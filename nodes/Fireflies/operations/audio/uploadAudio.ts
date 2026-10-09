@@ -1,8 +1,16 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { uploadAudioMutation, handleOperationError } from '../../helpers';
+import { uploadAudioMutation, handleOperationError, toAttendeeInputs } from '../../helpers';
 
-export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
+const LEGACY_DOWNLOAD_AUTH_TYPES: Record<string, string> = {
+  bearer: 'bearer_token',
+  basic: 'basic_auth',
+};
+
+export async function uploadAudio(
+  ef: IExecuteFunctions,
+  index: number,
+): Promise<INodeExecutionData> {
   try {
     const url = ef.getNodeParameter('url', index) as string;
     const title = ef.getNodeParameter('title', index) as string;
@@ -17,6 +25,7 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
       download_auth?: {
         authValues?: { type: string; token?: string; username?: string; password?: string };
       };
+      meeting_date?: string;
       save_video?: boolean;
       webhook?: string;
     };
@@ -26,13 +35,8 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
       title,
     };
 
-    if (additionalFields.attendees?.attendeeValues?.length) {
-      input.attendees = additionalFields.attendees.attendeeValues.map((attendee) => ({
-        display_name: attendee.displayName,
-        email: attendee.email,
-        phone_number: attendee.phoneNumber,
-      }));
-    }
+    const attendees = toAttendeeInputs(additionalFields.attendees?.attendeeValues);
+    if (attendees.length) input.attendees = attendees;
 
     if (additionalFields.client_reference_id) {
       input.client_reference_id = additionalFields.client_reference_id;
@@ -40,6 +44,10 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
 
     if (additionalFields.custom_language) {
       input.custom_language = additionalFields.custom_language;
+    }
+
+    if (additionalFields.meeting_date) {
+      input.meeting_date = new Date(additionalFields.meeting_date).toISOString();
     }
 
     if (additionalFields.save_video !== undefined) {
@@ -55,16 +63,24 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
     }
 
     if (additionalFields.download_auth?.authValues) {
-      const auth = additionalFields.download_auth.authValues;
+      const auth = { ...additionalFields.download_auth.authValues };
+      // Workflows saved before 2.3.0 stored `bearer` / `basic` as the type.
+      // n8n does not check stored option values at runtime, so map them
+      // rather than silently uploading with no authentication.
+      auth.type = LEGACY_DOWNLOAD_AUTH_TYPES[auth.type] ?? auth.type;
       let downloadAuth: Record<string, any> | undefined;
 
-      if (auth.type === 'bearer' && auth.token) {
-        downloadAuth = { type: 'bearer', bearer: { token: auth.token } };
-      } else if (auth.type === 'basic' && auth.username && auth.password) {
+      // DownloadAuthType is none | bearer_token | basic_auth; `bearer` and
+      // `basic` are the payload keys, not type values.
+      if (auth.type === 'bearer_token' && auth.token) {
+        downloadAuth = { type: 'bearer_token', bearer: { token: auth.token } };
+      } else if (auth.type === 'basic_auth' && auth.password) {
         downloadAuth = {
-          type: 'basic',
-          basic: { username: auth.username, password: auth.password },
+          type: 'basic_auth',
+          basic: { ...(auth.username && { username: auth.username }), password: auth.password },
         };
+      } else if (auth.type === 'none') {
+        downloadAuth = { type: 'none' };
       }
 
       if (downloadAuth) {
@@ -85,7 +101,7 @@ export async function uploadAudio(ef: IExecuteFunctions, index: number): Promise
       ef.getNode(),
       error,
       ef.continueOnFail(),
-      'uploadAudio'
+      'uploadAudio',
     );
 
     return {

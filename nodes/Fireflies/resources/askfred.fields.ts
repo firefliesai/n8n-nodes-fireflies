@@ -81,6 +81,13 @@ export const askfredFields: INodeProperties[] = [
         description: 'Language for the response (e.g., "en", "es", "fr")',
       },
       {
+        displayName: 'Generate Suggestions',
+        name: 'generateSuggestions',
+        type: 'boolean',
+        default: false,
+        description: 'Whether to return suggested follow-up questions with the answer',
+      },
+      {
         displayName: 'Format Mode',
         name: 'formatMode',
         type: 'options',
@@ -180,6 +187,13 @@ export const askfredFields: INodeProperties[] = [
         type: 'string',
         default: '',
         description: 'Language for the response (e.g., "en", "es", "fr")',
+      },
+      {
+        displayName: 'Generate Suggestions',
+        name: 'generateSuggestions',
+        type: 'boolean',
+        default: false,
+        description: 'Whether to return suggested follow-up questions with the answer',
       },
       {
         displayName: 'Format Mode',

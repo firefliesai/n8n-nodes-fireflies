@@ -41,6 +41,7 @@ export const getUsersQuery = `
       recent_meeting
       minutes_consumed
       is_admin
+      is_calendar_in_sync
     }
   }
 `;
@@ -51,9 +52,29 @@ export const getTranscriptsListQuery = `
       id
       title
       organizer_email
+      host_email
       participants
       meeting_link
       dateString
+      date
+      duration
+      privacy
+      transcript_url
+      calendar_id
+      cal_id
+      calendar_type
+      is_live
+      fireflies_users
+      workspace_users
+      meeting_attendees {
+        displayName
+        email
+        phoneNumber
+        name
+      }
+      channels {
+        id
+      }
     }
   }
 `;
@@ -74,6 +95,7 @@ export const getTranscriptSummaryQuery = `
         meeting_type
         topics_discussed
         transcript_chapters
+        notes
         extended_sections {
           title
           content
@@ -176,6 +198,7 @@ export const getTranscriptQuery = `
         meeting_type
         topics_discussed
         transcript_chapters
+        notes
         extended_sections {
           title
           content
@@ -226,8 +249,8 @@ export const getTranscriptQuery = `
 `;
 
 export const getCurrentUserQuery = `
-  query CurrentUser {
-    user {
+  query CurrentUser($id: String) {
+    user(id: $id) {
       user_id
       email
       name
@@ -242,6 +265,7 @@ export const getCurrentUserQuery = `
       recent_transcript
       recent_meeting
       minutes_consumed
+      is_calendar_in_sync
     }
   }
 `;
@@ -360,7 +384,6 @@ export const deleteAskFredThreadMutation = `
     }
   }
 `;
-
 
 export const getActiveMeetingsQuery = `
   query ActiveMeetings($input: GetActiveMeetingsInput) {
@@ -694,6 +717,7 @@ export const shareMeetingMutation = `
     shareMeeting(input: $input) {
       success
       message
+      share_slug
     }
   }
 `;
@@ -714,6 +738,164 @@ export const setUserRoleMutation = `
       email
       name
       is_admin
+    }
+  }
+`;
+
+const userGroupFields = `
+      id
+      name
+      handle
+      members {
+        user_id
+        first_name
+        last_name
+        email
+      }
+`;
+
+export const addUserToUserGroupMutation = `
+  mutation AddUserToUserGroup($groupId: String!, $userEmail: String!) {
+    addUserToUserGroup(group_id: $groupId, user_email: $userEmail) {${userGroupFields}    }
+  }
+`;
+
+export const removeUserFromUserGroupMutation = `
+  mutation RemoveUserFromUserGroup($groupId: String!, $userEmail: String!) {
+    removeUserFromUserGroup(group_id: $groupId, user_email: $userEmail) {${userGroupFields}    }
+  }
+`;
+
+export const updateMeetingStateMutation = `
+  mutation UpdateMeetingState($input: UpdateMeetingStateInput!) {
+    updateMeetingState(input: $input) {
+      success
+      action
+    }
+  }
+`;
+
+export const createLiveActionItemMutation = `
+  mutation CreateLiveActionItem($input: CreateLiveActionItemInput!) {
+    createLiveActionItem(input: $input) {
+      success
+    }
+  }
+`;
+
+export const createLiveSoundbiteMutation = `
+  mutation CreateLiveSoundbite($input: CreateLiveSoundbiteInput!) {
+    createLiveSoundbite(input: $input) {
+      success
+    }
+  }
+`;
+
+export const getLiveActionItemsQuery = `
+  query LiveActionItems($meetingId: ID!) {
+    live_action_items(meeting_id: $meetingId) {
+      name
+      action_item
+    }
+  }
+`;
+
+export const createUploadUrlMutation = `
+  mutation CreateUploadUrl($input: CreateUploadUrlInput!) {
+    createUploadUrl(input: $input) {
+      upload_url
+      meeting_id
+      expires_at
+    }
+  }
+`;
+
+export const confirmUploadMutation = `
+  mutation ConfirmUpload($input: ConfirmUploadInput!) {
+    confirmUpload(input: $input) {
+      success
+      meeting_id
+      message
+    }
+  }
+`;
+
+export const getAuditEventsQuery = `
+  query AuditEvents($limit: Int, $cursor: String, $filters: AuditEventFiltersInput!) {
+    auditEvents(limit: $limit, cursor: $cursor, filters: $filters) {
+      events {
+        id
+        time
+        category
+        action
+        severity
+        status
+        message
+        class_uid
+        activity_id
+        type_uid
+        actor {
+          user_id
+          email
+          full_name
+          ip_address
+        }
+        resource {
+          type
+          id
+        }
+        metadata
+      }
+      has_more
+      next_cursor
+    }
+  }
+`;
+
+export const getRuleExecutionsByMeetingQuery = `
+  query RuleExecutionsByMeeting(
+    $limit: Int
+    $cursor: String
+    $logsPerMeeting: Int
+    $filters: RuleExecutionFiltersInput
+  ) {
+    rule_executions_by_meeting(
+      limit: $limit
+      cursor: $cursor
+      logs_per_meeting: $logsPerMeeting
+      filters: $filters
+    ) {
+      meetings {
+        meeting_id
+        meeting {
+          id
+          title
+          organizer_email
+        }
+        resource_attributes {
+          host
+          attendees
+          user_group_ids
+          host_user_group_ids
+        }
+        executions {
+          extension_id
+          extension_title
+          stopped_at
+          user_name
+          share {
+            group_ids
+          }
+          channel {
+            channel_id
+          }
+          meeting_privacy {
+            privacy
+          }
+        }
+      }
+      has_more
+      next_cursor
     }
   }
 `;

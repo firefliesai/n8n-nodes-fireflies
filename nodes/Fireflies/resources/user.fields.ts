@@ -2,6 +2,35 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const userFields: INodeProperties[] = [
   {
+    displayName: 'Group ID',
+    name: 'groupId',
+    type: 'string',
+    required: true,
+    default: '',
+    displayOptions: {
+      show: {
+        resource: ['user'],
+        operation: ['addUserToUserGroup', 'removeUserFromUserGroup'],
+      },
+    },
+    description: 'ID of the user group (from User → Get Groups)',
+  },
+  {
+    displayName: 'User Email',
+    name: 'userEmail',
+    type: 'string',
+    placeholder: 'name@email.com',
+    required: true,
+    default: '',
+    displayOptions: {
+      show: {
+        resource: ['user'],
+        operation: ['addUserToUserGroup', 'removeUserFromUserGroup'],
+      },
+    },
+    description: 'Email address of the teammate to add or remove',
+  },
+  {
     displayName: 'User ID',
     name: 'userId',
     type: 'string',
@@ -10,10 +39,10 @@ export const userFields: INodeProperties[] = [
     displayOptions: {
       show: {
         resource: ['user'],
-        operation: ['setUserRole'],
+        operation: ['setUserRole', 'getUser'],
       },
     },
-    description: 'ID of the user to update',
+    description: 'ID of the user',
   },
   {
     displayName: 'Role',
