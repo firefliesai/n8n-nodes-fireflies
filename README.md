@@ -128,7 +128,7 @@ Use **Get Active Meetings** to see which meetings are currently in progress. Onc
 
 ### Rate limits
 
-The Fireflies API enforces per-plan request limits (per minute, and per day on Free and Pro); the current numbers are in the [Limits](https://docs.fireflies.ai/fundamentals/limits) documentation. When a request is rejected with `429 Too Many Requests`, the node waits for the time the API asks for in `Retry-After` and retries up to two times, as long as the wait is 30 seconds or less (a per-minute limit). A longer wait, such as a daily quota, fails the item at once with an error that states the wait in seconds, e.g. `Fireflies API rate limit reached. Retry after 3600 seconds.`, so a workflow never blocks for hours. To retry those automatically, enable **Retry On Fail** in the node settings with a matching wait; with **Continue On Fail** the error item carries `retryAfterSeconds` and `retryAt` instead.
+The Fireflies API enforces per-plan request limits (per minute, and per day on Free and Pro); the current numbers are in the [Limits](https://docs.fireflies.ai/fundamentals/limits) documentation. When a request is rejected as `too_many_requests`, the node waits for the time the API asks for (`Retry-After`) and retries up to two times, as long as the wait is about a minute or less (a per-minute limit). A longer wait, such as a daily quota, fails the item at once with an error that states the wait in seconds, e.g. `Fireflies API rate limit reached. Retry after 3600 seconds.`, so a workflow never blocks for hours. With **Continue On Fail** the error item carries `retryAfterSeconds` and `retryAt`, and the remaining input items of that run are not sent (each gets the same error item, marked `skipped`), because every request sent during a block extends it. n8n's **Retry On Fail** cannot cover such a wait (at most 5 tries, at most 5 seconds apart) and would only extend the block; branch on `retryAt` or pause with a **Wait** node instead, then send the remaining items.
 
 ## Credentials
 
@@ -150,7 +150,7 @@ The node uses API Key authentication to securely connect to the Fireflies.ai API
 
 ### 2.3.0
 
-- 🚦 **Rate limit handling**: a `429 Too Many Requests` / `too_many_requests` response is retried after the API's `Retry-After` (up to two retries, waits of 30 seconds or less); longer waits fail immediately with an error stating the wait in seconds and linking the [Limits](https://docs.fireflies.ai/fundamentals/limits) docs. With **Continue On Fail** the error item carries `retryAfterSeconds` and `retryAt`
+- 🚦 **Rate limit handling**: a `429 Too Many Requests` / `too_many_requests` response is retried after the API's `Retry-After` (up to two retries, waits of about a minute or less); longer waits fail immediately with an error stating the wait in seconds and linking the [Limits](https://docs.fireflies.ai/fundamentals/limits) docs. With **Continue On Fail** the error item carries `retryAfterSeconds` and `retryAt`, and the run's remaining items are skipped instead of being sent into the block
 - 🧪 **Tests**: added a Jest suite (`npm test`) covering the rate-limit path
 
 ### 2.2.0

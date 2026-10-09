@@ -10,15 +10,19 @@ export const RATE_LIMIT_ERROR_CODE = 'too_many_requests';
 /**
  * Retry policy for a rate-limited request.
  *
- * A per-minute (burst) rejection clears within seconds, so the node waits and
- * retries a couple of times instead of failing the workflow. A daily-quota
- * rejection asks for minutes or hours; blocking the n8n worker that long is
- * never right, so anything above `maxWaitMs` is thrown immediately with the
- * wait stated in the message.
+ * A per-minute rejection clears within the minute, so the node waits and
+ * retries a couple of times instead of failing the workflow. The API arms its
+ * block for the WHOLE window the moment the limit is crossed and advertises
+ * the block's expiry, so the first rejection of a per-minute window says
+ * `Retry-After: 60` (not the few seconds left in it); the cap therefore sits
+ * just above a minute, like the Fireflies Node SDK's. A daily-quota rejection
+ * asks for minutes or hours; blocking the n8n worker that long is never right,
+ * so anything above `maxWaitMs` is thrown immediately with the wait stated in
+ * the message.
  */
 export const RATE_LIMIT_RETRY = {
   maxRetries: 2,
-  maxWaitMs: 30_000,
+  maxWaitMs: 65_000,
 } as const;
 
 /** Wait assumed when the API says "too many requests" but gives no usable wait. */
@@ -109,7 +113,7 @@ export function formatRateLimitDescription(
   const parts = [
     `The Fireflies API rejected this request because your plan's request limit was reached (${RATE_LIMIT_ERROR_CODE}).`,
     `Wait ${info.retryAfterSeconds} seconds (until ${info.retryAt}) before retrying; retrying earlier extends the block.`,
-    'To retry automatically, enable "Retry On Fail" in the node settings with a wait of at least that long.',
+    'n8n\'s "Retry On Fail" cannot cover a wait this long (it retries at most 5 times, at most 5 seconds apart, and every early retry extends the block): use "Continue On Fail" and branch on the error item\'s retryAt, or pause with a Wait node, and send the remaining items after that moment.',
     `Limits per plan: ${RATE_LIMIT_DOCS_URL}`,
   ];
   if (partial) parts.push(partial.summary);

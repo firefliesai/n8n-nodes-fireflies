@@ -60,7 +60,12 @@ function fullResponse(statusCode: number, body: unknown, headers: Record<string,
 /** A fake execute context whose request helper plays the given responses in order. */
 function fakeExecuteFunctions(
   responses: Array<() => Promise<any>>,
-  options: { parameters?: Record<string, unknown>; continueOnFail?: boolean } = {},
+  options: {
+    parameters?: Record<string, unknown>;
+    continueOnFail?: boolean;
+    /** Number of input items `execute` iterates over (default 1). */
+    itemCount?: number;
+  } = {},
 ) {
   const httpRequestWithAuthentication = jest.fn(async () => {
     const next = responses.shift();
@@ -70,7 +75,7 @@ function fakeExecuteFunctions(
   const parameters = options.parameters ?? {};
   const ef = {
     getNode: () => node,
-    getInputData: () => [{ json: {} }],
+    getInputData: () => Array.from({ length: options.itemCount ?? 1 }, () => ({ json: {} })),
     getNodeParameter: (name: string) => parameters[name],
     continueOnFail: () => options.continueOnFail ?? false,
     helpers: {
@@ -214,6 +219,21 @@ describe('withRateLimitRetry', () => {
 
     expect(request).toHaveBeenCalledTimes(RATE_LIMIT_RETRY.maxRetries + 1);
     expect(sleepFn).toHaveBeenCalledTimes(RATE_LIMIT_RETRY.maxRetries);
+  });
+
+  it('waits out the full 60 seconds a first per-minute rejection advertises', async () => {
+    // The API arms the block for the whole window at the first rejection and
+    // reports its expiry, so the realistic first 429 says Retry-After: 60.
+    const sleepFn = jest.fn(async () => undefined);
+    const request = jest
+      .fn()
+      .mockRejectedValueOnce(http429Error({ 'retry-after': '60' }))
+      .mockResolvedValueOnce('ok');
+
+    await expect(withRateLimitRetry(request, { sleepFn, now: () => NOW })).resolves.toBe('ok');
+
+    expect(sleepFn).toHaveBeenCalledWith(60_000);
+    expect(RATE_LIMIT_RETRY.maxWaitMs).toBeGreaterThanOrEqual(60_000);
   });
 
   it('does not wait for a daily-quota rejection longer than maxWaitMs', async () => {
@@ -517,6 +537,40 @@ describe('Fireflies.execute end to end', () => {
       description: expect.stringContaining(RATE_LIMIT_DOCS_URL),
     });
     await expect(pending).rejects.not.toMatchObject({ message: expect.stringMatching(/\d{13}/) });
+  });
+
+  it('stops sending the rest of the run once an item is rate limited under Continue On Fail', async () => {
+    const { ef, httpRequestWithAuthentication } = fakeExecuteFunctions(
+      [
+        async () => fullResponse(200, { data: { transcript: { id: 't-1' } } }),
+        async () => limited(),
+        // Nothing scripted for item 3: it must never reach the API.
+      ],
+      { parameters, continueOnFail: true, itemCount: 3 },
+    );
+
+    const [items] = await new Fireflies().execute.call(ef);
+
+    expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(2);
+    expect(items).toHaveLength(3);
+    expect(items[0].json).toMatchObject({ success: true });
+    expect(items[1].json).toMatchObject({
+      success: false,
+      error: { code: 'too_many_requests', retryAfterSeconds: 120 },
+    });
+    expect(items[2].json).toMatchObject({
+      success: false,
+      error: {
+        code: 'too_many_requests',
+        skipped: true,
+        retryAfterSeconds: 120,
+        message: 'Not sent: an earlier item in this run was rate limited. Retry after 120 seconds.',
+      },
+    });
+    expect(items[2].pairedItem).toBe(2);
+    expect((items[2].json.error as { retryAt: string }).retryAt).toBe(
+      (items[1].json.error as { retryAt: string }).retryAt,
+    );
   });
 
   it('emits the rate-limit item when Continue On Fail is on', async () => {

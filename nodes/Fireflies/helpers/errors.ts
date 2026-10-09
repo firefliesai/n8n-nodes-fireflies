@@ -1,5 +1,5 @@
 import { NodeOperationError } from 'n8n-workflow';
-import type { INode } from 'n8n-workflow';
+import type { INode, INodeExecutionData } from 'n8n-workflow';
 import {
   FirefliesRateLimitError,
   GraphQLApiError,
@@ -8,6 +8,47 @@ import {
   getRateLimitInfo,
   toRateLimitNodeApiError,
 } from '../transport';
+
+/** The `error` of an item `handleOperationError` built for a rate limit, as far as skipping cares. */
+interface RateLimitErrorItem {
+  code?: string;
+  retryAfterSeconds?: number;
+  retryAt?: string;
+}
+
+/** Whether an output item is the rate-limit error item `handleOperationError` returns under Continue On Fail. */
+export function isRateLimitErrorItem(item: INodeExecutionData): boolean {
+  const error = item.json?.error as RateLimitErrorItem | undefined;
+  return typeof error === 'object' && error !== null && error.code === RATE_LIMIT_ERROR_CODE;
+}
+
+/**
+ * The item emitted for an input that was NOT sent because an earlier item of
+ * the same run was rate limited: every request sent during a block extends it,
+ * so the rest of the run waits for the same `retryAt`.
+ */
+export function buildSkippedRateLimitItem(
+  rateLimited: INodeExecutionData,
+  itemIndex: number,
+): INodeExecutionData {
+  const { retryAfterSeconds, retryAt } = rateLimited.json.error as RateLimitErrorItem;
+  return {
+    json: {
+      success: false,
+      error: {
+        message: `Not sent: an earlier item in this run was rate limited. Retry after ${retryAfterSeconds} seconds.`,
+        type: 'Rate Limit Error',
+        code: RATE_LIMIT_ERROR_CODE,
+        skipped: true,
+        retryAfterSeconds,
+        retryAt,
+        details: `Sending it would have extended the block. Retry this item at retryAt. See ${RATE_LIMIT_DOCS_URL}`,
+        timestamp: new Date().toISOString(),
+      },
+    },
+    pairedItem: itemIndex,
+  };
+}
 
 /** Generic error handler for all operations */
 export function handleOperationError(
