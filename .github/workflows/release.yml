@@ -1,17 +1,68 @@
 name: Release
 
+# Merging a version bump to main publishes it: npm first, then the vX.Y.Z tag
+# and GitHub release, with notes from .github/release-notes/<version>.md.
+# Every step is skipped when already done, so a push without a version bump is
+# a no-op and a failed run can be re-run (or dispatched) safely.
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-# npm publishes are not idempotent — queue overlapping runs instead of racing
-concurrency:
-  group: npm-publish
-  cancel-in-progress: false
+# No workflow-level concurrency group: Actions keeps only ONE pending run per
+# group, so a third quick push would replace the second and its version would
+# never ship. Each run handles its own commit's version instead, and every
+# step re-checks before acting, so runs racing on the same version end with
+# one publish and one release.
+
+permissions: {}
 
 jobs:
+  check:
+    name: Check what needs releasing
+    # A dispatch runs on whatever ref it names; only main may publish
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.state.outputs.version }}
+      published: ${{ steps.state.outputs.published }}
+      released: ${{ steps.state.outputs.released }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Read version and release state
+        id: state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NAME="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          # Standalone assignment so a failed probe fails the step (inside
+          # echo's argument its exit status would be lost)
+          PUBLISHED="$(.github/release-notes/npm-published.sh "$NAME@$VERSION")"
+          echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
+
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate release notes
+        if: steps.state.outputs.released == 'false'
+        run: .github/release-notes/check.sh
+
   build:
     name: Build package
+    needs: check
+    if: needs.check.outputs.published == 'false'
     runs-on: ubuntu-latest
     permissions:
       # Read-only checkout; no OIDC here so dependency install and build
@@ -27,16 +78,6 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-
-      - name: Verify release tag matches package version
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-        run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          if [ "${TAG#v}" != "$VERSION" ]; then
-            echo "Release tag '$TAG' does not match package version '$VERSION'" >&2
-            exit 1
-          fi
 
       - name: Install dependencies
         run: npm ci
@@ -82,9 +123,104 @@ jobs:
       - name: Update npm
         run: npm install -g npm@11.6.2
 
+      # Another run for the same version may have published since the check
+      - name: Check npm again
+        id: npm
+        run: |
+          TARBALL="$(ls ./*.tgz)"
+          SPEC="$(tar -xOzf "$TARBALL" package/package.json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const p=JSON.parse(s);console.log(p.name+"@"+p.version)})')"
+          # Inline copy of npm-published.sh: this job has no checkout
+          if npm view "$SPEC" version > /dev/null 2> "$RUNNER_TEMP/npm-view.err"; then
+            echo "$SPEC is already on npm; skipping publish"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif ! grep -q E404 "$RUNNER_TEMP/npm-view.err"; then
+            cat "$RUNNER_TEMP/npm-view.err" >&2
+            exit 1
+          fi
+
       # Authenticates via npm trusted publishing (GitHub OIDC) — no token
       # secret. --provenance makes the publish fail if the provenance
       # statement cannot be generated. --ignore-scripts because the tarball
       # is already built; prepublishOnly ran in the build job.
       - name: Publish
+        if: steps.npm.outputs.skip != 'true'
         run: npm publish ./*.tgz --provenance --access public --ignore-scripts
+
+  github-release:
+    name: Create GitHub release
+    needs: [check, publish]
+    # Runs after a successful publish, or when npm already had the version
+    # (publish skipped) but the release is still missing
+    if: >-
+      always() &&
+      needs.check.result == 'success' &&
+      needs.check.outputs.released == 'false' &&
+      (needs.publish.result == 'success' || needs.check.outputs.published == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      # Creates the tag and the release. Only reads files — no install, no build.
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.check.outputs.version }}
+        run: |
+          TAG="v$VERSION"
+          TITLE="$(.github/release-notes/check.sh)"
+          NOTES="$RUNNER_TEMP/notes.md"
+
+          # Another run for the same version may have released since the check
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "$TAG is already released; nothing to do"
+            exit 0
+          fi
+
+          # gh ignores --target when the tag already exists, so a leftover tag
+          # on another commit would silently label the wrong code
+          # Only "no such ref" (404/422) means no tag; any other API error fails
+          TAG_ERR="$RUNNER_TEMP/tag.err"
+          if ! TAG_SHA="$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha 2> "$TAG_ERR")"; then
+            if grep -qE 'HTTP (404|422)' "$TAG_ERR"; then
+              TAG_SHA=""
+            else
+              cat "$TAG_ERR" >&2
+              exit 1
+            fi
+          fi
+          if [ -n "$TAG_SHA" ] && [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Tag $TAG already points at $TAG_SHA, not $GITHUB_SHA. Delete the tag or release it by hand." >&2
+            exit 1
+          fi
+
+          # Only the highest version becomes "Latest": a release recovered
+          # for an older version must not displace a newer one
+          CURRENT="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null || echo v0.0.0)"
+          # sort -V ranks 2.4.0-rc.1 above 2.4.0; with '-' as '~' it ranks
+          # below, as SemVer does. A prerelease never becomes Latest.
+          CURRENT_KEY="$(printf '%s' "${CURRENT#v}" | tr '-' '~')"
+          VERSION_KEY="$(printf '%s' "$VERSION" | tr '-' '~')"
+          HIGHEST="$(printf '%s\n%s\n' "$CURRENT_KEY" "$VERSION_KEY" | sort -V | tail -n 1)"
+          case "$VERSION" in
+            *-*) LATEST=false ;;
+            *) if [ "$HIGHEST" = "$VERSION_KEY" ]; then LATEST=true; else LATEST=false; fi ;;
+          esac
+
+          tail -n +2 ".github/release-notes/$VERSION.md" > "$NOTES"
+
+          # Pull request list and Full Changelog link from GitHub's generator
+          GENERATED="$(gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+            -f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" --jq .body)"
+          printf '\n---\n\n%s\n' "$GENERATED" >> "$NOTES"
+
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$TITLE" \
+            --notes-file "$NOTES" \
+            --latest="$LATEST"
