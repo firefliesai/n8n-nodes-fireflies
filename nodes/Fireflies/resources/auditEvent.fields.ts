@@ -51,6 +51,7 @@ export const auditEventFields: INodeProperties[] = [
     default: false,
     displayOptions: { show },
     description: 'Whether to return all results or only up to a given limit',
+    hint: 'Stops after 200 pages (10,000 results). If more remain, each item carries page.truncated and page.next_cursor: continue with the Cursor filter.',
   },
   {
     displayName: 'Limit',

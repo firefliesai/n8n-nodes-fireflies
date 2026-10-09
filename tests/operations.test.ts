@@ -297,9 +297,51 @@ describe('cursor-paginated resources', () => {
     );
     const { ef, requests } = harness({ category: 'AUTHENTICATION', returnAll: true }, endless);
 
-    await run('auditEvent', 'getAuditEvents', ef);
+    const output = await run('auditEvent', 'getAuditEvents', ef);
 
     expect(requests).toHaveLength(MAX_PAGES);
+    // The cap is visible: the set is incomplete and says where to continue.
+    expect(output[0].json.page).toEqual({
+      has_more: true,
+      next_cursor: `c${MAX_PAGES}`,
+      truncated: true,
+    });
+  });
+
+  it('keeps the pages already fetched when a later page is rate limited', async () => {
+    const rateLimited = {
+      statusCode: 429,
+      headers: { 'retry-after': '3600' },
+      body: {
+        errors: [
+          {
+            message: 'Too many requests',
+            extensions: {
+              code: 'too_many_requests',
+              metadata: { retryAfter: Date.now() + 3_600_000 },
+            },
+          },
+        ],
+      },
+    };
+    const { ef, requests } = harness({ category: 'AUTHENTICATION', returnAll: true }, [
+      ok({ auditEvents: { events: [event('1'), event('2')], has_more: true, next_cursor: 'c2' } }),
+      rateLimited,
+    ]);
+    (ef as any).continueOnFail = () => true;
+
+    const output = await run('auditEvent', 'getAuditEvents', ef);
+
+    expect(requests).toHaveLength(2);
+    expect(output).toHaveLength(1);
+    expect(output[0].json.error).toMatchObject({
+      code: 'too_many_requests',
+      retryAfterSeconds: 3600,
+      partial: { completed: [event('1'), event('2')], rejected: ['c2'], pending: [] },
+    });
+    expect(output[0].json.error.details).toContain(
+      '2 records were fetched over 1 pages; continue from cursor c2',
+    );
   });
 
   it('clamps a limit above the API maximum to 50', async () => {

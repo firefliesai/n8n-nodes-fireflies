@@ -50,7 +50,11 @@ export async function getRuleExecutions(
       json: {
         success: true,
         data: meetingGroup,
-        page: { has_more: page.has_more, next_cursor: page.next_cursor },
+        page: {
+          has_more: page.has_more,
+          next_cursor: page.next_cursor,
+          ...(page.truncated && { truncated: true }),
+        },
       },
     }));
   } catch (error) {

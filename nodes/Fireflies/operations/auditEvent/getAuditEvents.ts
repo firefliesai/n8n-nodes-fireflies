@@ -41,7 +41,11 @@ export async function getAuditEvents(
       json: {
         success: true,
         data: event,
-        page: { has_more: page.has_more, next_cursor: page.next_cursor },
+        page: {
+          has_more: page.has_more,
+          next_cursor: page.next_cursor,
+          ...(page.truncated && { truncated: true }),
+        },
       },
     }));
   } catch (error) {
