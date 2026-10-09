@@ -63,17 +63,10 @@ export async function callGraphQLApi(
       throw new RateLimitedResponseError(statusCode, headers, body);
     }
 
-    // Check for GraphQL errors in the response
-    if (body.errors && body.errors.length > 0) {
-      throw new GraphQLApiError(
-        body.errors[0].message || 'GraphQL API error',
-        body.errors,
-        body.data,
-      );
-    }
-
     // Any other failing status: the same NodeApiError n8n's request helper
-    // would have thrown (httpCode + a description found in the body).
+    // would have thrown (httpCode + a description found in the body), checked
+    // BEFORE the body's `errors`, so a 401 or 503 that also carries a GraphQL
+    // errors array keeps its HTTP status instead of becoming a GraphQL error.
     if (statusCode >= 400) {
       const errorResponse =
         typeof body === 'object' && body !== null
@@ -82,6 +75,15 @@ export async function callGraphQLApi(
       throw new NodeApiError(this.getNode(), errorResponse as any, {
         httpCode: String(statusCode),
       });
+    }
+
+    // Check for GraphQL errors in the response
+    if (body.errors && body.errors.length > 0) {
+      throw new GraphQLApiError(
+        body.errors[0].message || 'GraphQL API error',
+        body.errors,
+        body.data,
+      );
     }
 
     // Return the data if no errors

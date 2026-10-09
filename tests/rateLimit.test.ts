@@ -12,6 +12,8 @@ import {
   withRateLimitRetry,
 } from '../nodes/Fireflies/transport';
 import { handleGraphQLErrors, handleOperationError } from '../nodes/Fireflies/helpers/errors';
+import { revokeSharedMeetingAccess } from '../nodes/Fireflies/operations/transcript/revokeSharedMeetingAccess';
+import { Fireflies } from '../nodes/Fireflies/Fireflies.node';
 
 const node: INode = {
   id: 'node-1',
@@ -56,17 +58,63 @@ function fullResponse(statusCode: number, body: unknown, headers: Record<string,
 }
 
 /** A fake execute context whose request helper plays the given responses in order. */
-function fakeExecuteFunctions(responses: Array<() => Promise<any>>) {
+function fakeExecuteFunctions(
+  responses: Array<() => Promise<any>>,
+  options: { parameters?: Record<string, unknown>; continueOnFail?: boolean } = {},
+) {
   const httpRequestWithAuthentication = jest.fn(async () => {
     const next = responses.shift();
     if (!next) throw new Error('no more responses scripted');
     return await next();
   });
+  const parameters = options.parameters ?? {};
   const ef = {
     getNode: () => node,
-    helpers: { httpRequestWithAuthentication },
+    getInputData: () => [{ json: {} }],
+    getNodeParameter: (name: string) => parameters[name],
+    continueOnFail: () => options.continueOnFail ?? false,
+    helpers: {
+      httpRequestWithAuthentication,
+      returnJsonArray: (data: any) => (Array.isArray(data) ? data : [data]),
+    },
   } as unknown as IExecuteFunctions;
   return { ef, httpRequestWithAuthentication };
+}
+
+/**
+ * Run `work` under fake timers, releasing every rate-limit wait as soon as it
+ * is armed, and report how many ms of waiting the retries asked for. No real
+ * time passes, so a busy runner cannot make these tests flaky.
+ */
+async function runWithFakeWaits<T>(
+  work: () => Promise<T>,
+): Promise<{ result: T; waitedMs: number }> {
+  const realSetTimeout = setTimeout;
+  const flushMicrotasks = () => new Promise<void>((resolve) => realSetTimeout(resolve, 0));
+  jest.useFakeTimers();
+  try {
+    let waitedMs = 0;
+    let done = false;
+    const settled = work().then(
+      (value) => ({ ok: true as const, value }),
+      (error) => ({ ok: false as const, error }),
+    );
+    void settled.then(() => (done = true));
+    for (let rounds = 0; !done; rounds++) {
+      if (rounds > 1_000) throw new Error('work never settled under fake timers');
+      await flushMicrotasks();
+      if (jest.getTimerCount() > 0) {
+        const before = jest.now();
+        jest.advanceTimersToNextTimer();
+        waitedMs += jest.now() - before;
+      }
+    }
+    const outcome = await settled;
+    if (!outcome.ok) throw outcome.error;
+    return { result: outcome.value, waitedMs };
+  } finally {
+    jest.useRealTimers();
+  }
 }
 
 describe('getRateLimitInfo', () => {
@@ -214,32 +262,34 @@ describe('callGraphQLApi', () => {
 
   it('retries an HTTP 429 after the Retry-After header, then returns the data', async () => {
     const { ef, httpRequestWithAuthentication } = fakeExecuteFunctions([
-      async () => fullResponse(429, rateLimitBody(Date.now() + 60_000), { 'retry-after': '1' }),
+      async () => fullResponse(429, rateLimitBody(Date.now() + 60_000), { 'retry-after': '7' }),
       async () => fullResponse(200, { data: { user: { name: 'Sam' } } }),
     ]);
 
-    const started = Date.now();
-    await expect(callGraphQLApi.call(ef, 'query { user { name } }')).resolves.toEqual({
-      user: { name: 'Sam' },
-    });
+    const { result, waitedMs } = await runWithFakeWaits(() =>
+      callGraphQLApi.call(ef, 'query { user { name } }'),
+    );
 
+    expect(result).toEqual({ user: { name: 'Sam' } });
     expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(2);
-    // The header (1 s) won over the body's retryAfter (60 s).
-    expect(Date.now() - started).toBeGreaterThanOrEqual(900);
-    expect(Date.now() - started).toBeLessThan(5_000);
-  }, 10_000);
+    // The header (7 s) won over the body's retryAfter (60 s).
+    expect(waitedMs).toBe(7_000);
+  });
 
   it('retries a 200 response whose GraphQL error is too_many_requests', async () => {
     const { ef, httpRequestWithAuthentication } = fakeExecuteFunctions([
-      async () => fullResponse(200, rateLimitBody(Date.now() + 1_000)),
+      async () => fullResponse(200, rateLimitBody(Date.now() + 3_000)),
       async () => fullResponse(200, { data: { user: { name: 'Sam' } } }),
     ]);
 
-    await expect(callGraphQLApi.call(ef, 'query { user { name } }')).resolves.toEqual({
-      user: { name: 'Sam' },
-    });
+    const { result, waitedMs } = await runWithFakeWaits(() =>
+      callGraphQLApi.call(ef, 'query { user { name } }'),
+    );
+
+    expect(result).toEqual({ user: { name: 'Sam' } });
     expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(2);
-  }, 10_000);
+    expect(waitedMs).toBe(3_000);
+  });
 
   it('fails with FirefliesRateLimitError once the retries are spent', async () => {
     const limited = () =>
@@ -248,11 +298,11 @@ describe('callGraphQLApi', () => {
       Array.from({ length: RATE_LIMIT_RETRY.maxRetries + 1 }, () => async () => limited()),
     );
 
-    await expect(callGraphQLApi.call(ef, 'query { user { name } }')).rejects.toBeInstanceOf(
-      FirefliesRateLimitError,
-    );
+    await expect(
+      runWithFakeWaits(() => callGraphQLApi.call(ef, 'query { user { name } }')),
+    ).rejects.toBeInstanceOf(FirefliesRateLimitError);
     expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(RATE_LIMIT_RETRY.maxRetries + 1);
-  }, 15_000);
+  });
 
   it('turns any other failing status into a NodeApiError with that httpCode', async () => {
     const { ef } = fakeExecuteFunctions([
@@ -265,6 +315,29 @@ describe('callGraphQLApi', () => {
 
     expect(error).toBeInstanceOf(NodeApiError);
     expect(error.httpCode).toBe('503');
+  });
+
+  it('keeps the HTTP status of a failing response that also carries a GraphQL errors array', async () => {
+    const { ef } = fakeExecuteFunctions([
+      async () =>
+        fullResponse(401, {
+          errors: [
+            {
+              message: 'Context creation failed: invalid key',
+              extensions: { code: 'auth_failed' },
+            },
+          ],
+        }),
+    ]);
+
+    const error: NodeApiError = await callGraphQLApi
+      .call(ef, 'query { user { name } }')
+      .catch((e: NodeApiError) => e);
+
+    expect(error).toBeInstanceOf(NodeApiError);
+    expect(error).not.toBeInstanceOf(GraphQLApiError);
+    expect(error.httpCode).toBe('401');
+    expect(error.description).toContain('invalid key');
   });
 
   it('surfaces any other GraphQL error as GraphQLApiError without retrying', async () => {
@@ -344,5 +417,78 @@ describe('handleOperationError on a rate limit', () => {
     expect(() => handleOperationError(node, forbidden, false, 'getTranscript')).toThrow(
       NodeOperationError,
     );
+  });
+});
+
+describe('revokeSharedMeetingAccess under a rate limit', () => {
+  const parameters = { transcriptId: 't-1', emails: 'a@example.com, b@example.com, c@example.com' };
+  const limited = () =>
+    fullResponse(429, rateLimitBody(Date.now() + 3_600_000), { 'retry-after': '3600' });
+
+  it('stops after the first rate-limited address instead of hitting the API for the rest', async () => {
+    const { ef, httpRequestWithAuthentication } = fakeExecuteFunctions(
+      [
+        async () => fullResponse(200, { data: { revokeSharedMeetingAccess: { success: true } } }),
+        async () => limited(),
+        async () => limited(),
+      ],
+      { parameters, continueOnFail: true },
+    );
+
+    const item = await revokeSharedMeetingAccess(ef, 0);
+
+    // One success, then one rejection (a daily-quota wait is never retried), then nothing.
+    expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(2);
+    expect(item.json).toMatchObject({
+      success: false,
+      error: { code: 'too_many_requests', retryAfterSeconds: 3600 },
+    });
+  });
+
+  it('fails the item with the 429 NodeApiError when Continue On Fail is off', async () => {
+    const { ef } = fakeExecuteFunctions([async () => limited()], { parameters });
+
+    const pending = revokeSharedMeetingAccess(ef, 0);
+
+    await expect(pending).rejects.toBeInstanceOf(NodeApiError);
+    await expect(pending).rejects.toMatchObject({
+      httpCode: '429',
+      message: 'Fireflies API rate limit reached. Retry after 3600 seconds.',
+    });
+  });
+});
+
+describe('Fireflies.execute end to end', () => {
+  const parameters = { resource: 'transcript', operation: 'getTranscript', transcriptId: 't-1' };
+  const limited = () =>
+    fullResponse(429, rateLimitBody(Date.now() + 120_000), { 'retry-after': '120' });
+
+  it('surfaces the rate-limit error unchanged: wait in the message, 429 httpCode, docs link', async () => {
+    const { ef } = fakeExecuteFunctions([async () => limited()], { parameters });
+
+    const pending = new Fireflies().execute.call(ef);
+
+    await expect(pending).rejects.toBeInstanceOf(NodeApiError);
+    await expect(pending).rejects.toMatchObject({
+      httpCode: '429',
+      message: 'Fireflies API rate limit reached. Retry after 120 seconds.',
+      description: expect.stringContaining(RATE_LIMIT_DOCS_URL),
+    });
+    await expect(pending).rejects.not.toMatchObject({ message: expect.stringMatching(/\d{13}/) });
+  });
+
+  it('emits the rate-limit item when Continue On Fail is on', async () => {
+    const { ef } = fakeExecuteFunctions([async () => limited()], {
+      parameters,
+      continueOnFail: true,
+    });
+
+    const [items] = await new Fireflies().execute.call(ef);
+
+    expect(items).toHaveLength(1);
+    expect(items[0].json).toMatchObject({
+      success: false,
+      error: { code: 'too_many_requests', retryAfterSeconds: 120 },
+    });
   });
 });
