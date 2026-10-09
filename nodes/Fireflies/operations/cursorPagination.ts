@@ -10,6 +10,8 @@ export interface CursorPage<T> {
    * are real, the set is incomplete: continue from `next_cursor`.
    */
   truncated?: boolean;
+  /** The API repeated the cursor it was given; there is no cursor to resume from. */
+  stalled?: boolean;
 }
 
 /** Largest page the API serves for the cursor-paginated queries. */
@@ -68,10 +70,11 @@ export async function fetchCursorPages<T>(
       return { items, has_more: result.has_more, next_cursor: result.next_cursor };
     }
     if (result.next_cursor === cursor) {
-      // The API handed back the cursor it was given: following it would
-      // re-fetch the same page until MAX_PAGES. Stop here and keep what was
-      // fetched, flagged like a capped run so the set is not taken as complete.
-      return { items, has_more: true, next_cursor: cursor ?? null, truncated: true };
+      // The API handed back the cursor it was given, so it offers no way past
+      // this page: following it would re-fetch the same page until MAX_PAGES,
+      // and publishing it would let a resumed run do the same. Keep what was
+      // fetched, publish no cursor, and say why.
+      return { items, has_more: true, next_cursor: null, truncated: true, stalled: true };
     }
     cursor = result.next_cursor;
   }

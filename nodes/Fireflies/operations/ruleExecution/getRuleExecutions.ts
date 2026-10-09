@@ -53,6 +53,7 @@ export async function getRuleExecutions(
           has_more: page.has_more,
           next_cursor: page.next_cursor,
           ...(page.truncated && { truncated: true }),
+          ...(page.stalled && { stalled: true }),
         },
       },
     }));

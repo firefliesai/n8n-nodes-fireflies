@@ -375,7 +375,13 @@ describe('cursor-paginated resources', () => {
 
     expect(requests).toHaveLength(2);
     expect(output.map((o: any) => o.json.data.id)).toEqual(['0', '1']);
-    expect(output[0].json.page).toEqual({ has_more: true, next_cursor: 'c1', truncated: true });
+    // The repeated cursor leads nowhere, so it is not offered as a place to resume.
+    expect(output[0].json.page).toEqual({
+      has_more: true,
+      next_cursor: null,
+      truncated: true,
+      stalled: true,
+    });
   });
 
   it('keeps the pages already fetched when a later page is rate limited', async () => {
