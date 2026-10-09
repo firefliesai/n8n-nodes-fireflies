@@ -21,7 +21,7 @@ export async function revokeSharedMeetingAccess(
     const results: Array<{ email: string; success: boolean; message?: string; error?: string }> =
       [];
 
-    for (const email of emailArray) {
+    for (const [position, email] of emailArray.entries()) {
       try {
         const response = await callGraphQLApi.call(ef, revokeSharedMeetingAccessMutation, {
           input: { meeting_id: transcriptId, email },
@@ -36,9 +36,19 @@ export async function revokeSharedMeetingAccess(
         // Out of rate-limit retries: every remaining address would be rejected
         // (and retried) the same way, so stop here and surface the structured
         // wait through handleOperationError instead of a per-address message.
-        // Revoking is idempotent per address, so re-running after the wait is safe.
+        // The addresses already processed and the ones never attempted ride on
+        // the error, because the earlier revocations have taken effect and a
+        // workflow needs to know which addresses still need the re-run.
         if (perEmailError instanceof FirefliesRateLimitError) {
-          throw perEmailError;
+          const pending = emailArray.slice(position);
+          throw perEmailError.withPartialProgress({
+            completed: results.map((r) => ({ ...r })),
+            pending,
+            summary:
+              `Before the limit was reached, ${results.length} of ${emailArray.length} addresses were processed` +
+              `${results.length ? ` (${results.map((r) => r.email).join(', ')})` : ''}; ` +
+              `${pending.length} not attempted (${pending.join(', ')}).`,
+          });
         }
         results.push({
           email,

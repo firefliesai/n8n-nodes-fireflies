@@ -1,5 +1,5 @@
 import { NodeApiError, sleep } from 'n8n-workflow';
-import type { INode } from 'n8n-workflow';
+import type { INode, JsonValue } from 'n8n-workflow';
 
 /** Public documentation of the per-plan limits. Linked, never copied: the numbers change. */
 export const RATE_LIMIT_DOCS_URL = 'https://docs.fireflies.ai/fundamentals/limits';
@@ -65,26 +65,52 @@ export class RateLimitedResponseError extends Error {
 export class FirefliesRateLimitError extends Error {
   public readonly info: RateLimitInfo;
   public readonly cause?: unknown;
+  /**
+   * Progress an operation had made before the limit hit, when it issues
+   * several requests per item (one per e-mail address, say). Set with
+   * `withPartialProgress`; surfaced on the error item and in the description
+   * so a workflow can tell what already took effect and what was never tried.
+   */
+  public readonly partial?: RateLimitPartialProgress;
 
-  constructor(info: RateLimitInfo, cause?: unknown) {
+  constructor(info: RateLimitInfo, cause?: unknown, partial?: RateLimitPartialProgress) {
     super(formatRateLimitMessage(info));
     this.name = 'FirefliesRateLimitError';
     this.info = info;
     this.cause = cause;
+    this.partial = partial;
   }
+
+  /** The same error, annotated with what the operation had completed and what is still pending. */
+  withPartialProgress(partial: RateLimitPartialProgress): FirefliesRateLimitError {
+    return new FirefliesRateLimitError(this.info, this.cause, partial);
+  }
+}
+
+export interface RateLimitPartialProgress {
+  /** Outcomes of the requests that ran before the limit hit, in the operation's own shape. */
+  completed: JsonValue[];
+  /** The inputs that were never attempted. */
+  pending: JsonValue[];
+  /** One human-readable sentence, appended to the error description. */
+  summary: string;
 }
 
 export function formatRateLimitMessage(info: Pick<RateLimitInfo, 'retryAfterSeconds'>): string {
   return `Fireflies API rate limit reached. Retry after ${info.retryAfterSeconds} seconds.`;
 }
 
-export function formatRateLimitDescription(info: RateLimitInfo): string {
+export function formatRateLimitDescription(
+  info: RateLimitInfo,
+  partial?: RateLimitPartialProgress,
+): string {
   const parts = [
     `The Fireflies API rejected this request because your plan's request limit was reached (${RATE_LIMIT_ERROR_CODE}).`,
     `Wait ${info.retryAfterSeconds} seconds (until ${info.retryAt}) before retrying; retrying earlier extends the block.`,
     'To retry automatically, enable "Retry On Fail" in the node settings with a wait of at least that long.',
     `Limits per plan: ${RATE_LIMIT_DOCS_URL}`,
   ];
+  if (partial) parts.push(partial.summary);
   if (info.correlationId) parts.push(`Correlation ID: ${info.correlationId}`);
   return parts.join(' ');
 }
@@ -103,11 +129,14 @@ export function toRateLimitNodeApiError(
       retryAfterSeconds: error.info.retryAfterSeconds,
       retryAt: error.info.retryAt,
       correlationId: error.info.correlationId ?? null,
+      ...(error.partial && {
+        partial: { completed: error.partial.completed, pending: error.partial.pending },
+      }),
     },
     {
       httpCode: '429',
       message: error.message,
-      description: formatRateLimitDescription(error.info),
+      description: formatRateLimitDescription(error.info, error.partial),
       itemIndex,
     },
   );

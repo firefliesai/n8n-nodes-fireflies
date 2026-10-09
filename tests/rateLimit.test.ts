@@ -441,12 +441,29 @@ describe('revokeSharedMeetingAccess under a rate limit', () => {
     expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(2);
     expect(item.json).toMatchObject({
       success: false,
-      error: { code: 'too_many_requests', retryAfterSeconds: 3600 },
+      error: {
+        code: 'too_many_requests',
+        retryAfterSeconds: 3600,
+        // What already took effect and what still needs the re-run.
+        partial: {
+          completed: [{ email: 'a@example.com', success: true }],
+          pending: ['b@example.com', 'c@example.com'],
+        },
+      },
     });
+    const details = (item.json.error as { details: string }).details;
+    expect(details).toContain('1 of 3 addresses were processed (a@example.com)');
+    expect(details).toContain('2 not attempted (b@example.com, c@example.com)');
   });
 
-  it('fails the item with the 429 NodeApiError when Continue On Fail is off', async () => {
-    const { ef } = fakeExecuteFunctions([async () => limited()], { parameters });
+  it('fails the item with the 429 NodeApiError, naming the partial progress, when Continue On Fail is off', async () => {
+    const { ef } = fakeExecuteFunctions(
+      [
+        async () => fullResponse(200, { data: { revokeSharedMeetingAccess: { success: true } } }),
+        async () => limited(),
+      ],
+      { parameters },
+    );
 
     const pending = revokeSharedMeetingAccess(ef, 0);
 
@@ -454,7 +471,26 @@ describe('revokeSharedMeetingAccess under a rate limit', () => {
     await expect(pending).rejects.toMatchObject({
       httpCode: '429',
       message: 'Fireflies API rate limit reached. Retry after 3600 seconds.',
+      description: expect.stringContaining(
+        '1 of 3 addresses were processed (a@example.com); 2 not attempted (b@example.com, c@example.com).',
+      ),
     });
+  });
+
+  it('reports zero progress when the very first address is rate limited', async () => {
+    const { ef } = fakeExecuteFunctions([async () => limited()], {
+      parameters,
+      continueOnFail: true,
+    });
+
+    const item = await revokeSharedMeetingAccess(ef, 0);
+
+    const error = item.json.error as { partial: unknown; details: string };
+    expect(error.partial).toEqual({
+      completed: [],
+      pending: ['a@example.com', 'b@example.com', 'c@example.com'],
+    });
+    expect(error.details).toContain('0 of 3 addresses were processed; 3 not attempted');
   });
 });
 

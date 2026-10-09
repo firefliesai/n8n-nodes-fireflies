@@ -33,7 +33,12 @@ export function handleOperationError(
         retryAfterSeconds: error.info.retryAfterSeconds,
         retryAt: error.info.retryAt,
         correlationId: error.info.correlationId,
-        details: `Error in ${operationName}. See ${RATE_LIMIT_DOCS_URL}`,
+        ...(error.partial && {
+          partial: { completed: error.partial.completed, pending: error.partial.pending },
+        }),
+        details: `Error in ${operationName}. ${
+          error.partial ? `${error.partial.summary} ` : ''
+        }See ${RATE_LIMIT_DOCS_URL}`,
         timestamp: new Date().toISOString(),
       },
     };
