@@ -40,14 +40,21 @@ export async function revokeSharedMeetingAccess(
         // the error, because the earlier revocations have taken effect and a
         // workflow needs to know which addresses still need the re-run.
         if (perEmailError instanceof FirefliesRateLimitError) {
-          const pending = emailArray.slice(position);
+          // This address reached the API and was refused; the ones after it were never sent.
+          const pending = emailArray.slice(position + 1);
           throw perEmailError.withPartialProgress({
             completed: results.map((r) => ({ ...r })),
+            rejected: [email],
             pending,
             summary:
               `Before the limit was reached, ${results.length} of ${emailArray.length} addresses were processed` +
               `${results.length ? ` (${results.map((r) => r.email).join(', ')})` : ''}; ` +
-              `${pending.length} not attempted (${pending.join(', ')}).`,
+              `${email} was rejected by the limit` +
+              `${
+                pending.length
+                  ? `, and ${pending.length} not attempted (${pending.join(', ')})`
+                  : ''
+              }.`,
           });
         }
         results.push({

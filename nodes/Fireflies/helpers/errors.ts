@@ -34,7 +34,11 @@ export function handleOperationError(
         retryAt: error.info.retryAt,
         correlationId: error.info.correlationId,
         ...(error.partial && {
-          partial: { completed: error.partial.completed, pending: error.partial.pending },
+          partial: {
+            completed: error.partial.completed,
+            rejected: error.partial.rejected,
+            pending: error.partial.pending,
+          },
         }),
         details: `Error in ${operationName}. ${
           error.partial ? `${error.partial.summary} ` : ''

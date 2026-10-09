@@ -90,7 +90,9 @@ export class FirefliesRateLimitError extends Error {
 export interface RateLimitPartialProgress {
   /** Outcomes of the requests that ran before the limit hit, in the operation's own shape. */
   completed: JsonValue[];
-  /** The inputs that were never attempted. */
+  /** The input whose request the limit refused: attempted, not applied, needs the re-run. */
+  rejected: JsonValue[];
+  /** The inputs that were never attempted; they need the re-run too. */
   pending: JsonValue[];
   /** One human-readable sentence, appended to the error description. */
   summary: string;
@@ -130,7 +132,11 @@ export function toRateLimitNodeApiError(
       retryAt: error.info.retryAt,
       correlationId: error.info.correlationId ?? null,
       ...(error.partial && {
-        partial: { completed: error.partial.completed, pending: error.partial.pending },
+        partial: {
+          completed: error.partial.completed,
+          rejected: error.partial.rejected,
+          pending: error.partial.pending,
+        },
       }),
     },
     {

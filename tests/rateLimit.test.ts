@@ -447,13 +447,16 @@ describe('revokeSharedMeetingAccess under a rate limit', () => {
         // What already took effect and what still needs the re-run.
         partial: {
           completed: [{ email: 'a@example.com', success: true }],
-          pending: ['b@example.com', 'c@example.com'],
+          rejected: ['b@example.com'],
+          pending: ['c@example.com'],
         },
       },
     });
     const details = (item.json.error as { details: string }).details;
     expect(details).toContain('1 of 3 addresses were processed (a@example.com)');
-    expect(details).toContain('2 not attempted (b@example.com, c@example.com)');
+    expect(details).toContain(
+      'b@example.com was rejected by the limit, and 1 not attempted (c@example.com)',
+    );
   });
 
   it('fails the item with the 429 NodeApiError, naming the partial progress, when Continue On Fail is off', async () => {
@@ -472,7 +475,7 @@ describe('revokeSharedMeetingAccess under a rate limit', () => {
       httpCode: '429',
       message: 'Fireflies API rate limit reached. Retry after 3600 seconds.',
       description: expect.stringContaining(
-        '1 of 3 addresses were processed (a@example.com); 2 not attempted (b@example.com, c@example.com).',
+        '1 of 3 addresses were processed (a@example.com); b@example.com was rejected by the limit, and 1 not attempted (c@example.com).',
       ),
     });
   });
@@ -488,9 +491,12 @@ describe('revokeSharedMeetingAccess under a rate limit', () => {
     const error = item.json.error as { partial: unknown; details: string };
     expect(error.partial).toEqual({
       completed: [],
-      pending: ['a@example.com', 'b@example.com', 'c@example.com'],
+      rejected: ['a@example.com'],
+      pending: ['b@example.com', 'c@example.com'],
     });
-    expect(error.details).toContain('0 of 3 addresses were processed; 3 not attempted');
+    expect(error.details).toContain(
+      '0 of 3 addresses were processed; a@example.com was rejected by the limit, and 2 not attempted (b@example.com, c@example.com).',
+    );
   });
 });
 
