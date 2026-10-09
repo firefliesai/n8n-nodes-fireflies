@@ -183,7 +183,16 @@ jobs:
 
           # gh ignores --target when the tag already exists, so a leftover tag
           # on another commit would silently label the wrong code
-          TAG_SHA="$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha 2>/dev/null || true)"
+          # Only "no such ref" (404/422) means no tag; any other API error fails
+          TAG_ERR="$RUNNER_TEMP/tag.err"
+          if ! TAG_SHA="$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha 2> "$TAG_ERR")"; then
+            if grep -qE 'HTTP (404|422)' "$TAG_ERR"; then
+              TAG_SHA=""
+            else
+              cat "$TAG_ERR" >&2
+              exit 1
+            fi
+          fi
           if [ -n "$TAG_SHA" ] && [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
             echo "::error::Tag $TAG already points at $TAG_SHA, not $GITHUB_SHA. Delete the tag or release it by hand." >&2
             exit 1
