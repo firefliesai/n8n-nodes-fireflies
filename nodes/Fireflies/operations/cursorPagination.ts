@@ -12,11 +12,15 @@ export interface CursorPage<T> {
   truncated?: boolean;
 }
 
+/** Largest page the API serves for the cursor-paginated queries. */
+export const PAGE_SIZE = 50;
+
 /** Upper bound on pages fetched by one Return All, so a cursor the API never ends cannot loop forever. */
 export const MAX_PAGES = 200;
 
 /**
- * Fetch one page, or every page when `returnAll`, of a cursor-paginated query.
+ * Fetch a cursor-paginated query: every page when `returnAll`, otherwise as
+ * many pages as it takes to collect `limit` results (n8n's meaning of Limit).
  * Each page is a separate request through `callGraphQLApi`, so it gets the
  * same rate-limit handling as any other call.
  *
@@ -29,15 +33,19 @@ export async function fetchCursorPages<T>(
   query: string,
   variables: Record<string, unknown>,
   readPage: (data: any) => CursorPage<T>,
-  returnAll: boolean,
+  /** Fetch every page (`returnAll`), or pages until `limit` results are collected. */
+  { returnAll, limit }: { returnAll: boolean; limit?: number },
 ): Promise<CursorPage<T>> {
   const items: T[] = [];
   let cursor = variables.cursor as string | undefined;
   for (let page = 0; page < MAX_PAGES; page++) {
     let data: unknown;
     try {
+      // The API caps a page at PAGE_SIZE; a Limit above it spans several pages.
+      const remaining = returnAll ? PAGE_SIZE : Math.max(1, (limit ?? PAGE_SIZE) - items.length);
       data = await callGraphQLApi.call(ef, query, {
         ...variables,
+        limit: Math.min(PAGE_SIZE, remaining),
         ...(cursor && { cursor }),
       });
     } catch (error) {
@@ -55,7 +63,8 @@ export async function fetchCursorPages<T>(
     }
     const result = readPage(data);
     items.push(...result.items);
-    if (!returnAll || !result.has_more || !result.next_cursor) {
+    const limitReached = !returnAll && items.length >= (limit ?? PAGE_SIZE);
+    if (limitReached || !result.has_more || !result.next_cursor) {
       return { items, has_more: result.has_more, next_cursor: result.next_cursor };
     }
     cursor = result.next_cursor;

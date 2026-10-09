@@ -4,6 +4,7 @@ import {
   confirmUploadMutation,
   createUploadUrlMutation,
   handleOperationError,
+  toAttendeeInputs,
 } from '../../helpers';
 
 /**
@@ -51,13 +52,8 @@ export async function uploadFile(
     const title = additionalFields.title || binaryData.fileName;
     if (title) input.title = title;
     if (additionalFields.custom_language) input.custom_language = additionalFields.custom_language;
-    if (additionalFields.attendees?.attendeeValues?.length) {
-      input.attendees = additionalFields.attendees.attendeeValues.map((attendee) => ({
-        displayName: attendee.displayName,
-        email: attendee.email,
-        phoneNumber: attendee.phoneNumber,
-      }));
-    }
+    const attendees = toAttendeeInputs(additionalFields.attendees?.attendeeValues);
+    if (attendees.length) input.attendees = attendees;
 
     const created = (await callGraphQLApi.call(ef, createUploadUrlMutation, { input }))
       .createUploadUrl as { upload_url: string; meeting_id: string; expires_at: string };

@@ -17,8 +17,7 @@ export async function getAuditEvents(
       actor_email?: string;
       cursor?: string;
     };
-    // The API caps a page at 50.
-    const limit = returnAll ? 50 : Math.min(50, ef.getNodeParameter('limit', index, 50) as number);
+    const limit = returnAll ? undefined : (ef.getNodeParameter('limit', index, 50) as number);
 
     const apiFilters: Record<string, unknown> = { category };
     for (const key of ['action', 'date_from', 'date_to', 'actor_user_id', 'actor_email'] as const) {
@@ -28,13 +27,13 @@ export async function getAuditEvents(
     const page = await fetchCursorPages<IDataObject>(
       ef,
       getAuditEventsQuery,
-      { limit, filters: apiFilters, ...(filters.cursor && { cursor: filters.cursor }) },
+      { filters: apiFilters, ...(filters.cursor && { cursor: filters.cursor }) },
       (data) => ({
         items: data.auditEvents?.events ?? [],
         has_more: Boolean(data.auditEvents?.has_more),
         next_cursor: data.auditEvents?.next_cursor ?? null,
       }),
-      returnAll,
+      { returnAll, limit },
     );
 
     return page.items.map((event) => ({

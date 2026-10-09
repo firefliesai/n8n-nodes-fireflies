@@ -1,6 +1,11 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { uploadAudioMutation, handleOperationError } from '../../helpers';
+import { uploadAudioMutation, handleOperationError, toAttendeeInputs } from '../../helpers';
+
+const LEGACY_DOWNLOAD_AUTH_TYPES: Record<string, string> = {
+  bearer: 'bearer_token',
+  basic: 'basic_auth',
+};
 
 export async function uploadAudio(
   ef: IExecuteFunctions,
@@ -30,15 +35,8 @@ export async function uploadAudio(
       title,
     };
 
-    if (additionalFields.attendees?.attendeeValues?.length) {
-      input.attendees = additionalFields.attendees.attendeeValues.map((attendee) => ({
-        // The API's Attendee input is camelCase (displayName, phoneNumber);
-        // snake_case keys are rejected as unknown input fields.
-        displayName: attendee.displayName,
-        email: attendee.email,
-        phoneNumber: attendee.phoneNumber,
-      }));
-    }
+    const attendees = toAttendeeInputs(additionalFields.attendees?.attendeeValues);
+    if (attendees.length) input.attendees = attendees;
 
     if (additionalFields.client_reference_id) {
       input.client_reference_id = additionalFields.client_reference_id;
@@ -65,7 +63,11 @@ export async function uploadAudio(
     }
 
     if (additionalFields.download_auth?.authValues) {
-      const auth = additionalFields.download_auth.authValues;
+      const auth = { ...additionalFields.download_auth.authValues };
+      // Workflows saved before 2.3.0 stored `bearer` / `basic` as the type.
+      // n8n does not check stored option values at runtime, so map them
+      // rather than silently uploading with no authentication.
+      auth.type = LEGACY_DOWNLOAD_AUTH_TYPES[auth.type] ?? auth.type;
       let downloadAuth: Record<string, any> | undefined;
 
       // DownloadAuthType is none | bearer_token | basic_auth; `bearer` and

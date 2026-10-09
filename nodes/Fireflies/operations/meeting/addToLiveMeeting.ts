@@ -1,6 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
-import { addToLiveMeetingMutation, handleOperationError } from '../../helpers';
+import { addToLiveMeetingMutation, handleOperationError, toAttendeeInputs } from '../../helpers';
 
 export async function addToLiveMeeting(
   ef: IExecuteFunctions,
@@ -27,10 +27,10 @@ export async function addToLiveMeeting(
       }),
       ...(additionalFields.duration !== undefined && { duration: additionalFields.duration }),
       ...(additionalFields.language && { language: additionalFields.language }),
-      ...(additionalFields.attendees?.attendeeValues?.length && {
-        attendees: additionalFields.attendees.attendeeValues,
-      }),
     };
+
+    const attendees = toAttendeeInputs(additionalFields.attendees?.attendeeValues);
+    if (attendees.length) variables.attendees = attendees;
 
     const response = await callGraphQLApi.call(ef, addToLiveMeetingMutation, variables);
 

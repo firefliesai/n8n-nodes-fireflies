@@ -125,7 +125,7 @@ describe('live meetings', () => {
     });
   });
 
-  it('passes attendees to Add to Live Meeting', async () => {
+  it('passes attendees to Add to Live Meeting, without the blank fields n8n fills in', async () => {
     const attendee = { displayName: 'Ana', email: 'ana@example.com', phoneNumber: '' };
     const { ef, requests } = harness(
       {
@@ -137,7 +137,10 @@ describe('live meetings', () => {
 
     await run('meeting', 'addToLiveMeeting', ef);
 
-    expect(requests[0].variables).toMatchObject({ attendees: [attendee] });
+    // An empty email fails the API's @IsEmail(); blank fields must not be sent.
+    expect(requests[0].variables!.attendees).toEqual([
+      { displayName: 'Ana', email: 'ana@example.com' },
+    ]);
   });
 });
 
@@ -206,6 +209,58 @@ describe('Upload Audio input shape', () => {
       download_auth: { type: 'basic_auth', basic: { password: 'secret' } },
       meeting_date: '2026-10-01T09:00:00.000Z',
     });
+  });
+
+  it.each([
+    ['bearer', 'bearer_token', { token: 't' }, { bearer: { token: 't' } }],
+    [
+      'basic',
+      'basic_auth',
+      { username: 'u', password: 'p' },
+      { basic: { username: 'u', password: 'p' } },
+    ],
+  ])(
+    'maps the pre-2.3.0 stored type %s to %s instead of dropping the auth',
+    async (legacy, current, values, payload) => {
+      const { ef, requests } = harness(
+        {
+          url: 'https://files.example.com/a.mp3',
+          title: 'Weekly',
+          additionalFields: { download_auth: { authValues: { type: legacy, ...values } } },
+        },
+        [ok({ uploadAudio: { success: true } })],
+      );
+
+      await run('audio', 'uploadAudio', ef);
+
+      expect(requests[0].variables!.input.download_auth).toEqual({ type: current, ...payload });
+    },
+  );
+
+  it('drops blank attendee fields and fully blank attendees', async () => {
+    const { ef, requests } = harness(
+      {
+        url: 'https://files.example.com/a.mp3',
+        title: 'Weekly',
+        additionalFields: {
+          attendees: {
+            attendeeValues: [
+              { displayName: 'Ana', email: '', phoneNumber: '' },
+              { displayName: '', email: '', phoneNumber: '' },
+              { displayName: '', email: ' bo@example.com ', phoneNumber: '+1 555' },
+            ],
+          },
+        },
+      },
+      [ok({ uploadAudio: { success: true } })],
+    );
+
+    await run('audio', 'uploadAudio', ef);
+
+    expect(requests[0].variables!.input.attendees).toEqual([
+      { displayName: 'Ana' },
+      { email: 'bo@example.com', phoneNumber: '+1 555' },
+    ]);
   });
 
   it('maps a bearer token', async () => {
@@ -344,14 +399,41 @@ describe('cursor-paginated resources', () => {
     );
   });
 
-  it('clamps a limit above the API maximum to 50', async () => {
-    const { ef, requests } = harness({ category: 'AUTHENTICATION', returnAll: false, limit: 500 }, [
-      ok({ auditEvents: { events: [], has_more: false, next_cursor: null } }),
+  it('a Limit above the page size spans pages until it is reached', async () => {
+    const page = (from: number, count: number, next: string) =>
+      ok({
+        auditEvents: {
+          events: Array.from({ length: count }, (_, i) => event(String(from + i))),
+          has_more: true,
+          next_cursor: next,
+        },
+      });
+    const { ef, requests } = harness({ category: 'AUTHENTICATION', returnAll: false, limit: 120 }, [
+      page(0, 50, 'c2'),
+      page(50, 50, 'c3'),
+      page(100, 20, 'c4'),
     ]);
 
-    await run('auditEvent', 'getAuditEvents', ef);
+    const output = await run('auditEvent', 'getAuditEvents', ef);
 
-    expect(requests[0].variables!.limit).toBe(50);
+    expect(requests.map((r) => [r.variables!.limit, r.variables!.cursor])).toEqual([
+      [50, undefined],
+      [50, 'c2'],
+      [20, 'c3'],
+    ]);
+    expect(output).toHaveLength(120);
+    expect(output[119].json.page).toEqual({ has_more: true, next_cursor: 'c4' });
+  });
+
+  it('a Limit stops early when the API runs out', async () => {
+    const { ef, requests } = harness({ category: 'AUTHENTICATION', returnAll: false, limit: 120 }, [
+      ok({ auditEvents: { events: [event('1')], has_more: false, next_cursor: null } }),
+    ]);
+
+    const output = await run('auditEvent', 'getAuditEvents', ef);
+
+    expect(requests).toHaveLength(1);
+    expect(output).toHaveLength(1);
   });
 
   it('rule executions map filters, logs per meeting and the test/production switch', async () => {

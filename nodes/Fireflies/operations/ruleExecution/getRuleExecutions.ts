@@ -17,8 +17,7 @@ export async function getRuleExecutions(
       logs_per_meeting?: number;
       cursor?: string;
     };
-    // The API caps a page at 50.
-    const limit = returnAll ? 50 : Math.min(50, ef.getNodeParameter('limit', index, 50) as number);
+    const limit = returnAll ? undefined : (ef.getNodeParameter('limit', index, 50) as number);
 
     const apiFilters: Record<string, unknown> = {};
     for (const key of ['rule_id', 'meeting_id', 'date_from', 'date_to'] as const) {
@@ -29,7 +28,7 @@ export async function getRuleExecutions(
       apiFilters.is_test = filters.is_test === 'true';
     }
 
-    const variables: Record<string, unknown> = { limit };
+    const variables: Record<string, unknown> = {};
     if (Object.keys(apiFilters).length) variables.filters = apiFilters;
     if (filters.logs_per_meeting) variables.logsPerMeeting = filters.logs_per_meeting;
     if (filters.cursor) variables.cursor = filters.cursor;
@@ -43,7 +42,7 @@ export async function getRuleExecutions(
         has_more: Boolean(data.rule_executions_by_meeting?.has_more),
         next_cursor: data.rule_executions_by_meeting?.next_cursor ?? null,
       }),
-      returnAll,
+      { returnAll, limit },
     );
 
     return page.items.map((meetingGroup) => ({
