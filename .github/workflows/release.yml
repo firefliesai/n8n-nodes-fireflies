@@ -9,16 +9,19 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# npm publishes are not idempotent — queue overlapping runs instead of racing
-concurrency:
-  group: npm-publish
-  cancel-in-progress: false
+# No workflow-level concurrency group: Actions keeps only ONE pending run per
+# group, so a third quick push would replace the second and its version would
+# never ship. Each run handles its own commit's version instead, and every
+# step re-checks before acting, so runs racing on the same version end with
+# one publish and one release.
 
 permissions: {}
 
 jobs:
   check:
     name: Check what needs releasing
+    # A dispatch runs on whatever ref it names; only main may publish
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,12 +44,7 @@ jobs:
           VERSION="$(node -p "require('./package.json').version")"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-          # Empty output = version not on npm; a registry error fails the step
-          if [ -n "$(npm view "$NAME@$VERSION" version)" ]; then
-            echo "published=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "published=false" >> "$GITHUB_OUTPUT"
-          fi
+          echo "published=$(.github/release-notes/npm-published.sh "$NAME@$VERSION")" >> "$GITHUB_OUTPUT"
 
           if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             echo "released=true" >> "$GITHUB_OUTPUT"
@@ -122,11 +120,27 @@ jobs:
       - name: Update npm
         run: npm install -g npm@11.6.2
 
+      # Another run for the same version may have published since the check
+      - name: Check npm again
+        id: npm
+        run: |
+          TARBALL="$(ls ./*.tgz)"
+          SPEC="$(tar -xOzf "$TARBALL" package/package.json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const p=JSON.parse(s);console.log(p.name+"@"+p.version)})')"
+          # Inline copy of npm-published.sh: this job has no checkout
+          if npm view "$SPEC" version > /dev/null 2> "$RUNNER_TEMP/npm-view.err"; then
+            echo "$SPEC is already on npm; skipping publish"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif ! grep -q E404 "$RUNNER_TEMP/npm-view.err"; then
+            cat "$RUNNER_TEMP/npm-view.err" >&2
+            exit 1
+          fi
+
       # Authenticates via npm trusted publishing (GitHub OIDC) — no token
       # secret. --provenance makes the publish fail if the provenance
       # statement cannot be generated. --ignore-scripts because the tarball
       # is already built; prepublishOnly ran in the build job.
       - name: Publish
+        if: steps.npm.outputs.skip != 'true'
         run: npm publish ./*.tgz --provenance --access public --ignore-scripts
 
   github-release:
@@ -158,6 +172,26 @@ jobs:
           TITLE="$(.github/release-notes/check.sh)"
           NOTES="$RUNNER_TEMP/notes.md"
 
+          # Another run for the same version may have released since the check
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "$TAG is already released; nothing to do"
+            exit 0
+          fi
+
+          # gh ignores --target when the tag already exists, so a leftover tag
+          # on another commit would silently label the wrong code
+          TAG_SHA="$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha 2>/dev/null || true)"
+          if [ -n "$TAG_SHA" ] && [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Tag $TAG already points at $TAG_SHA, not $GITHUB_SHA. Delete the tag or release it by hand." >&2
+            exit 1
+          fi
+
+          # Only the highest version becomes "Latest": a release recovered
+          # for an older version must not displace a newer one
+          CURRENT="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null || echo v0.0.0)"
+          HIGHEST="$(printf '%s\n%s\n' "${CURRENT#v}" "$VERSION" | sort -V | tail -n 1)"
+          if [ "$HIGHEST" = "$VERSION" ]; then LATEST=true; else LATEST=false; fi
+
           tail -n +2 ".github/release-notes/$VERSION.md" > "$NOTES"
 
           # Pull request list and Full Changelog link from GitHub's generator
@@ -170,4 +204,4 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "$TITLE" \
             --notes-file "$NOTES" \
-            --latest
+            --latest="$LATEST"
