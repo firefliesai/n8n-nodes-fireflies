@@ -1,6 +1,6 @@
-# Fireflies public GraphQL API schema, generated from firefliesai/public-api-ff main @ 898731f
-# (resolver metadata via @nestjs/graphql GraphQLSchemaFactory). Contract fixture for
-# tests/schemaContract.test.ts: refresh it when the API changes, never hand-edit it.
+# Fireflies public GraphQL API schema (https://api.fireflies.ai/graphql). Contract
+# fixture for tests/schemaContract.test.ts: refresh it from the live API's
+# introspection when the API changes, never hand-edit it.
 
 type ActiveMeeting {
   id: String
