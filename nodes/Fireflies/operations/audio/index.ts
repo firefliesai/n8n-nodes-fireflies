@@ -1,3 +1,4 @@
 import { uploadAudio } from './uploadAudio';
+import { uploadFile } from './uploadFile';
 
-export { uploadAudio };
+export { uploadAudio, uploadFile };

@@ -1,0 +1,878 @@
+# Fireflies public GraphQL API schema, generated from firefliesai/public-api-ff main @ 898731f
+# (resolver metadata via @nestjs/graphql GraphQLSchemaFactory). Contract fixture for
+# tests/schemaContract.test.ts: refresh it when the API changes, never hand-edit it.
+
+type ActiveMeeting {
+  id: String
+  title: String
+  organizer_email: String
+  meeting_link: String
+  start_time: String
+  end_time: String
+  privacy: MeetingPrivacy
+  state: MeetingState
+}
+
+"""Meeting privacy levels"""
+enum MeetingPrivacy {
+  link
+  owner
+  participants
+  participatingteammates
+  teammatesandparticipants
+  teammates
+}
+
+"""Meeting state values"""
+enum MeetingState {
+  active
+  paused
+}
+
+type AIFilters {
+  text_cleanup: String
+  task: String
+  pricing: String
+  metric: String
+  question: String
+  date_and_time: String
+  sentiment: String
+}
+
+type AudioUploadStatus {
+  success: Boolean!
+  title: String!
+  message: String!
+}
+
+type ChannelMember {
+  user_id: String!
+  email: String!
+  name: String!
+}
+
+type Channel {
+  id: ID!
+  created_at: String
+  updated_at: String
+  created_by: String
+  is_private: Boolean
+  title: String
+  members: [ChannelMember!]!
+}
+
+type Contact {
+  email: String!
+  name: String!
+  picture: String
+  last_meeting_date: String
+}
+
+type MeetingAttendeeModel {
+  displayName: String
+  email: String
+  phoneNumber: String
+  name: String
+  location: String
+}
+
+type MeetingAttendance {
+  name: String!
+  join_time: String!
+  leave_time: String
+}
+
+type Sentence {
+  index: Int
+  speaker_name: String
+  speaker_id: Int
+  raw_text: String
+  start_time: Float
+  end_time: Float
+  ai_filters: AIFilters
+  text: String
+}
+
+type MeetingInfo {
+  silent_meeting: Boolean
+  summary_status: SummaryStatus
+  fred_joined: Boolean
+}
+
+enum SummaryStatus {
+  processing
+  processed
+  failed
+  skipped
+  default
+}
+
+type SummarySection {
+  title: String!
+  content: String!
+}
+
+type Summary {
+  keywords: [String!]
+  action_items: String
+  outline: String
+  shorthand_bullet: String
+  overview: String
+  bullet_gist: String
+  notes: String
+  gist: String
+  short_summary: String
+  short_overview: String
+  meeting_type: String
+  topics_discussed: [String!]
+  transcript_chapters: [String!]
+  extended_sections: [SummarySection!]
+}
+
+type UserGroupMember {
+  user_id: String!
+  first_name: String!
+  last_name: String!
+  email: String!
+}
+
+type UserGroup {
+  id: String!
+  name: String!
+  handle: String!
+  members: [UserGroupMember!]
+}
+
+type User {
+  user_id: String
+  email: String
+  integrations: [String!]
+  user_groups: [UserGroup!]
+  is_calendar_in_sync: Boolean
+  name: String
+  num_transcripts: Float
+  recent_transcript: String
+  recent_meeting: String
+  minutes_consumed: Float
+  is_admin: Boolean
+}
+
+type Transcript {
+  id: String
+  sentences: [Sentence!]
+  title: String
+  host_email: String
+  organizer_email: String
+  user: User
+  privacy: String
+  participants: [String!]
+  date: Float
+  duration: Float
+  summary: Summary
+  meeting_info: MeetingInfo
+  is_live: Boolean
+  transcript_url: String
+  audio_url: String
+  video_url: String
+  dateString: String
+  apps_preview: Apps
+  meeting_attendees: [MeetingAttendeeModel!]
+  meeting_attendance: [MeetingAttendance!]
+  speakers: [Speaker!]
+  calendar_id: String
+  cal_id: String
+  calendar_type: String
+  meeting_link: String
+  analytics: MeetingAnalytics
+  fireflies_users: [String!]
+  workspace_users: [String!]
+  channels: [Channel!]!
+  shared_with: [SharedWith!]
+}
+
+type BiteCaption {
+  end_time: Float!
+  index: Int!
+  speaker_id: String!
+  speaker_name: String!
+  start_time: Float!
+  text: String!
+}
+
+type BiteOrigin {
+  description: String
+  duration: Float
+  id: ID!
+  name: String!
+  type: BiteOriginType!
+}
+
+enum BiteOriginType {
+  MEETING
+}
+
+type BiteUser {
+  first_name: String
+  last_name: String
+  picture: String
+  name: String!
+  id: ID!
+}
+
+type MediaSource {
+  src: String!
+  type: String!
+}
+
+type Bite {
+  transcript_id: String!
+  name: String!
+  id: ID!
+  thumbnail: String
+  preview: String
+  status: String
+  summary: String
+  user_id: String!
+  start_time: Float!
+  end_time: Float!
+  summary_status: String
+  media_type: String
+  created_at: String
+  created_from: BiteOrigin
+  captions: [BiteCaption!]
+  sources: [MediaSource!]
+  privacies: [BitePrivacy!]!
+  user: BiteUser!
+}
+
+enum BitePrivacy {
+  public
+  team
+  participants
+}
+
+type AddToLiveMeeting {
+  message: String!
+  success: Boolean!
+}
+
+type Speaker {
+  id: Float
+  name: String
+}
+
+type AppOutput {
+  transcript_id: String
+  user_id: String
+  app_id: String
+  created_at: Float
+  title: String
+  prompt: String
+  response: String
+}
+
+type Apps {
+  outputs: [AppOutput!]
+}
+
+type Sentiments {
+  negative_pct: Float
+  neutral_pct: Float
+  positive_pct: Float
+}
+
+type TeamMeetingStats {
+  count: Int!
+  count_diff_pct: Int
+  duration: Float!
+  duration_diff_pct: Int
+  average_count: Int!
+  average_count_diff_pct: Int
+  average_duration: Int!
+  average_duration_diff_pct: Int
+}
+
+type UserMeetingStats {
+  count: Int!
+  count_diff: Int!
+  count_diff_compared_to: Int!
+  count_diff_pct: Int
+  duration: Float!
+  duration_diff: Int!
+  duration_diff_compared_to: Int!
+  duration_diff_pct: Int
+}
+
+type TeamConversationStats {
+  average_filler_words: Int!
+  average_filler_words_diff_pct: Int
+  average_monologues_count: Int!
+  average_monologues_count_diff_pct: Int
+  average_questions: Int!
+  average_questions_diff_pct: Int
+  average_sentiments: Sentiments!
+  average_silence_duration: Float!
+  average_silence_duration_diff_pct: Int
+  average_talk_listen_ratio: Float!
+  average_words_per_minute: Float!
+  longest_monologue_duration_sec: Int!
+  longest_monologue_duration_diff_pct: Int
+  total_filler_words: Int!
+  total_filler_words_diff_pct: Int
+  total_meeting_notes_count: Int!
+  total_meetings_count: Int!
+  total_monologues_count: Int!
+  total_monologues_diff_pct: Int
+  teammates_count: Int!
+  total_questions: Int!
+  total_questions_diff_pct: Int
+  total_silence_duration: Float!
+  total_silence_duration_diff_pct: Int
+}
+
+type UserConversationStats {
+  talk_listen_pct: Float!
+  talk_listen_ratio: Float!
+  total_silence_duration: Float!
+  total_silence_duration_compare_to: Float
+  total_silence_pct: Float!
+  total_silence_ratio: Float!
+  total_speak_duration: Float!
+  total_speak_duration_with_user: Float!
+  total_word_count: Int!
+  user_filler_words: Int!
+  user_filler_words_compare_to: Int!
+  user_filler_words_diff_pct: Int
+  user_longest_monologue_sec: Int!
+  user_longest_monologue_compare_to: Int!
+  user_longest_monologue_diff_pct: Int
+  user_monologues_count: Int!
+  user_monologues_count_compare_to: Int!
+  user_monologues_count_diff_pct: Int
+  user_questions: Int!
+  user_questions_compare_to: Int!
+  user_questions_diff_pct: Int
+  user_speak_duration: Float!
+  user_word_count: Int!
+  user_words_per_minute: Int!
+  user_words_per_minute_compare_to: Int!
+  user_words_per_minute_diff_pct: Int
+}
+
+type TeamAnalytics {
+  conversation: TeamConversationStats!
+  meeting: TeamMeetingStats!
+}
+
+type UserAnalytics {
+  user_id: String!
+  user_name: String!
+  user_email: String!
+  conversation: UserConversationStats!
+  meeting: UserMeetingStats!
+}
+
+type Analytics {
+  team: TeamAnalytics!
+  users: [UserAnalytics!]!
+}
+
+type AnalyticsCategories {
+  questions: Int
+  date_times: Int
+  metrics: Int
+  tasks: Int
+}
+
+type AnalyticsSpeaker {
+  speaker_id: Int
+  name: String
+  duration: Float
+  word_count: Int
+  longest_monologue: Float
+  monologues_count: Int
+  filler_words: Int
+  questions: Int
+  duration_pct: Float
+  words_per_minute: Float
+}
+
+type MeetingAnalytics {
+  sentiments: Sentiments
+  categories: AnalyticsCategories
+  speakers: [AnalyticsSpeaker!]
+}
+
+type AskFredMessage {
+  id: String!
+  thread_id: String!
+  query: String!
+  answer: String!
+  suggested_queries: [String!]
+  status: AskFredMessageStatus!
+  created_at: String!
+  updated_at: String
+}
+
+"""The status of an AskFred message"""
+enum AskFredMessageStatus {
+  processing
+  completed
+  failed
+}
+
+type AskFredThread {
+  id: String!
+  title: String!
+  transcript_id: String
+  user_id: String!
+  created_at: String!
+  messages: [AskFredMessage!]!
+}
+
+type AskFredThreadSummary {
+  id: String!
+  title: String!
+  transcript_id: String
+  user_id: String!
+  created_at: String!
+}
+
+type AskFredResponse {
+  """The generated message response"""
+  message: AskFredMessage!
+  cost: Float
+}
+
+type UpdateMeetingStateResult {
+  """Whether the action was executed successfully"""
+  success: Boolean!
+
+  """The action that was executed"""
+  action: MeetingStateAction!
+}
+
+"""Actions that can be performed to change meeting state"""
+enum MeetingStateAction {
+  pause_recording
+  resume_recording
+}
+
+type CreateLiveActionItemResult {
+  """Whether the action item was created successfully"""
+  success: Boolean!
+}
+
+type CreateLiveSoundbiteResult {
+  """Whether the soundbite was created successfully"""
+  success: Boolean!
+}
+
+type LiveActionItem {
+  name: String
+  action_item: String!
+}
+
+type UploadUrlResponse {
+  upload_url: String!
+  meeting_id: String!
+  expires_at: String!
+}
+
+type ConfirmUploadResponse {
+  success: Boolean!
+  meeting_id: String!
+  message: String!
+}
+
+type RuleExecutionShare {
+  group_ids: String
+}
+
+type RuleExecutionChannel {
+  channel_id: String
+}
+
+type RuleExecutionMeetingPrivacy {
+  privacy: String
+}
+
+type RuleExecutionResourceAttributes {
+  host: String
+  type: String
+  title: String
+  external: Boolean
+  attendees: [String!]
+  organizer_email: String
+  user_group_ids: [String!]
+  host_user_group_ids: [String!]
+}
+
+type RuleExecutionMeeting {
+  id: String!
+  title: String
+  organizer_email: String
+}
+
+type RuleExecution {
+  meeting_id: String
+  extension_id: String!
+  extension_title: String!
+  stopped_at: String
+  user_name: String
+  meeting: RuleExecutionMeeting
+  resource_attributes: RuleExecutionResourceAttributes
+  share: RuleExecutionShare
+  channel: RuleExecutionChannel
+  meeting_privacy: RuleExecutionMeetingPrivacy
+}
+
+type RuleExecutionMeetingGroup {
+  meeting_id: String!
+  meeting: RuleExecutionMeeting
+  resource_attributes: RuleExecutionResourceAttributes
+  executions: [RuleExecution!]!
+}
+
+type RuleExecutionsByMeetingResponse {
+  meetings: [RuleExecutionMeetingGroup!]!
+  has_more: Boolean!
+  next_cursor: String
+}
+
+type RevokeSharedMeetingAccessResponse {
+  success: Boolean!
+  message: String
+}
+
+type ShareMeetingResponse {
+  success: Boolean!
+  message: String
+  share_slug: String
+}
+
+type SharedWith {
+  email: String
+  name: String
+  photo_url: String
+  expires_at: String
+}
+
+type AuditEventActor {
+  user_id: String
+  email: String
+  full_name: String
+  ip_address: String
+}
+
+type AuditEventResource {
+  type: String!
+  id: String!
+}
+
+type AuditEvent {
+  id: String!
+
+  """ISO 8601 timestamp"""
+  time: String!
+  category: AuditEventCategory!
+  action: AuditEventAction!
+  severity: String!
+  status: String!
+  message: String
+
+  """OCSF class UID"""
+  class_uid: Int!
+
+  """OCSF activity ID"""
+  activity_id: Int!
+
+  """OCSF type UID (class_uid * 100 + activity_id)"""
+  type_uid: Int!
+  actor: AuditEventActor
+  resource: AuditEventResource
+
+  """Additional event metadata as a JSON string of key-value pairs"""
+  metadata: String
+}
+
+"""Category of audit event"""
+enum AuditEventCategory {
+  MEETING_OPERATIONS
+  TEAM_OPERATIONS
+  USER_OPERATIONS
+  AUTHENTICATION
+}
+
+"""Specific audit event action"""
+enum AuditEventAction {
+  MEETING_DELETED
+  MEETING_PRIVACY_UPDATED
+  MEETING_VIEWED
+  MEETING_SHARED
+  MEETING_ACCESS_REVOKED
+  MEETING_DOWNLOADED
+  MEETING_TITLE_UPDATED
+  MEETING_MOVED_TO_CHANNEL
+  SOUNDBITE_CREATED
+  TEAMMATE_ADDED
+  TEAMMATE_REMOVED
+  USER_ROLE_CHANGED
+  USER_GROUP_MEMBER_ADDED
+  USER_GROUP_MEMBER_REMOVED
+  SETTINGS_UPDATED
+  LOGIN
+  LOGOUT
+}
+
+type AuditEventsResponse {
+  events: [AuditEvent!]!
+  has_more: Boolean!
+  next_cursor: String
+}
+
+type Query {
+  bites(mine: Boolean, transcript_id: ID, limit: Int, my_team: Boolean, skip: Int): [Bite!]!
+  bite(id: ID!): Bite
+
+  """Get a summary of all threads for the current user"""
+  askfred_threads(transcript_id: String): [AskFredThreadSummary!]
+
+  """Get a specific thread by ID with all its messages"""
+  askfred_thread(id: String!): AskFredThread
+  users: [User!]
+  user(id: String): User
+  user_groups(mine: Boolean): [UserGroup!]
+  transcripts(title: String, keyword: String, scope: String, date: Float, fromDate: DateTime, toDate: DateTime, limit: Int = 50, skip: Int = 0, user_id: String, mine: Boolean, organizers: [String!], participants: [String!], channel_id: String, host_email: String, organizer_email: String, participant_email: String): [Transcript!]
+  transcript(id: String!): Transcript
+  active_meetings(input: GetActiveMeetingsInput): [ActiveMeeting!]
+  channels: [Channel!]!
+  channel(id: ID!): Channel
+
+  """
+  List audit events for the authenticated user's team. Enterprise plan and admin role required.
+  """
+  auditEvents(limit: Int = 20, cursor: String, filters: AuditEventFiltersInput!): AuditEventsResponse!
+  contacts: [Contact!]!
+  rule_executions_by_meeting(limit: Int = 10, cursor: String, logs_per_meeting: Int = 5, filters: RuleExecutionFiltersInput): RuleExecutionsByMeetingResponse!
+  apps(app_id: String, transcript_id: String, skip: Float, limit: Float): Apps
+
+  """Get live action items for a meeting"""
+  live_action_items(meeting_id: ID!): [LiveActionItem!]!
+  analytics(start_time: String, end_time: String): Analytics!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input GetActiveMeetingsInput {
+  email: String
+
+  """
+  Filter by meeting states. Returns both active and paused meetings by default.
+  """
+  states: [MeetingState!]
+}
+
+input AuditEventFiltersInput {
+  category: AuditEventCategory!
+  action: AuditEventAction
+  date_from: String
+  date_to: String
+  actor_user_id: String
+  actor_email: String
+}
+
+input RuleExecutionFiltersInput {
+  rule_id: String
+  meeting_id: String
+  date_from: String
+  date_to: String
+
+  """
+  Filter by test evaluations. When true, returns only test logs. When false, returns only non-test logs. When not provided, returns all logs.
+  """
+  is_test: Boolean
+}
+
+type Mutation {
+  createBite(transcript_Id: ID!, name: String, start_time: Float!, end_time: Float!, media_type: String, privacies: [BitePrivacy!], summary: String): Bite!
+
+  """Continue an existing AskFred conversation thread"""
+  continueAskFredThread(input: ContinueAskFredThreadInput!): AskFredResponse!
+
+  """
+  Create a new AskFred thread with a question. Can be about a specific meeting or across multiple meetings with filters.
+  """
+  createAskFredThread(input: CreateAskFredThreadInput!): AskFredResponse!
+
+  """Delete an AskFred thread and all its messages"""
+  deleteAskFredThread(id: String!): AskFredThread!
+  setUserRole(user_id: String!, role: Role!): User!
+  addUserToUserGroup(group_id: String!, user_email: String!): UserGroup!
+  removeUserFromUserGroup(group_id: String!, user_email: String!): UserGroup!
+  updateMeetingTitle(input: UpdateMeetingTitleInput!): Transcript!
+  updateMeetingPrivacy(input: UpdateMeetingPrivacyInput!): Transcript!
+  updateMeetingChannel(input: UpdateMeetingChannelInput!): [Transcript!]!
+  deleteTranscript(id: String!): Transcript!
+  addToLiveMeeting(meeting_link: String!, title: String, meeting_password: String, duration: Int, language: String, attendees: [AttendeeInput!]): AddToLiveMeeting!
+  uploadAudio(input: AudioUploadInput): AudioUploadStatus!
+  shareMeeting(input: ShareMeetingInput!): ShareMeetingResponse!
+  revokeSharedMeetingAccess(input: RevokeSharedMeetingAccessInput!): RevokeSharedMeetingAccessResponse!
+  createUploadUrl(input: CreateUploadUrlInput!): UploadUrlResponse!
+  confirmUpload(input: ConfirmUploadInput!): ConfirmUploadResponse!
+
+  """Update meeting state (pause or resume recording)"""
+  updateMeetingState(input: UpdateMeetingStateInput!): UpdateMeetingStateResult!
+
+  """Create a live action item for a meeting"""
+  createLiveActionItem(input: CreateLiveActionItemInput!): CreateLiveActionItemResult!
+
+  """Create a live soundbite for a meeting"""
+  createLiveSoundbite(input: CreateLiveSoundbiteInput!): CreateLiveSoundbiteResult!
+}
+
+input ContinueAskFredThreadInput {
+  thread_id: String!
+  query: String!
+  response_language: String
+  format_mode: FormatMode
+  generate_suggestions: Boolean
+}
+
+"""Output format mode for AskFred responses"""
+enum FormatMode {
+  markdown
+  plaintext
+}
+
+input CreateAskFredThreadInput {
+  query: String!
+  transcript_id: String
+  filters: AskFredMeetingFiltersInput
+  response_language: String
+  format_mode: FormatMode
+  generate_suggestions: Boolean
+}
+
+input AskFredMeetingFiltersInput {
+  start_time: String
+  end_time: String
+  channel_ids: [String!]
+  organizers: [String!]
+  participants: [String!]
+  transcript_ids: [String!]
+}
+
+enum Role {
+  admin
+  user
+}
+
+input UpdateMeetingTitleInput {
+  title: String!
+  id: String!
+}
+
+input UpdateMeetingPrivacyInput {
+  id: ID!
+  privacy: MeetingPrivacy!
+}
+
+input UpdateMeetingChannelInput {
+  transcript_ids: [String!]!
+  channel_id: ID!
+}
+
+input AttendeeInput {
+  email: String
+  phoneNumber: String
+  displayName: String
+}
+
+input AudioUploadInput {
+  url: String!
+  webhook: String
+  title: String
+  attendees: [AttendeeInput!]
+  custom_language: String
+  client_reference_id: String
+  save_video: Boolean
+  bypass_size_check: Boolean
+  download_auth: DownloadAuthInput
+  meeting_date: String
+}
+
+input DownloadAuthInput {
+  type: DownloadAuthType!
+  bearer: BearerTokenAuthInput
+  basic: BasicAuthInput
+}
+
+"""Authentication method for downloading the audio/video file"""
+enum DownloadAuthType {
+  none
+  bearer_token
+  basic_auth
+}
+
+input BearerTokenAuthInput {
+  token: String!
+}
+
+input BasicAuthInput {
+  username: String
+  password: String!
+}
+
+input ShareMeetingInput {
+  meeting_id: ID!
+  emails: [String!]!
+  expiry_days: Int
+  share_type: ShareMeetingType
+  password: String
+}
+
+"""
+How a meeting is shared. EMAIL shares directly with the given recipients. PASSWORD_LINK creates a password-protected link that people can open without a Fireflies account.
+"""
+enum ShareMeetingType {
+  EMAIL
+  PASSWORD_LINK
+}
+
+input RevokeSharedMeetingAccessInput {
+  meeting_id: ID!
+  email: String!
+}
+
+input CreateUploadUrlInput {
+  title: String
+  content_type: String!
+  file_size: Int!
+  custom_language: String
+  attendees: [AttendeeInput!]
+}
+
+input ConfirmUploadInput {
+  meeting_id: String!
+}
+
+input UpdateMeetingStateInput {
+  meeting_id: ID!
+
+  """The state action to execute (pause_recording or resume_recording)"""
+  action: MeetingStateAction!
+}
+
+input CreateLiveActionItemInput {
+  meeting_id: ID!
+  prompt: String!
+}
+
+input CreateLiveSoundbiteInput {
+  meeting_id: ID!
+  prompt: String!
+}

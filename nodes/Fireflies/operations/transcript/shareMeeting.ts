@@ -2,15 +2,23 @@ import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
 import { shareMeetingMutation, handleOperationError } from '../../helpers';
 
-export async function shareMeeting(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
+export async function shareMeeting(
+  ef: IExecuteFunctions,
+  index: number,
+): Promise<INodeExecutionData> {
   try {
     const transcriptId = ef.getNodeParameter('transcriptId', index) as string;
     const emails = ef.getNodeParameter('emails', index) as string;
     const additionalFields = ef.getNodeParameter('additionalFields', index, {}) as {
       expiryDays?: number;
+      shareType?: string;
+      password?: string;
     };
 
-    const emailArray = emails.split(',').map((e) => e.trim()).filter(Boolean);
+    const emailArray = emails
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean);
     if (emailArray.length === 0) {
       throw new Error('At least one recipient email is required');
     }
@@ -22,6 +30,14 @@ export async function shareMeeting(ef: IExecuteFunctions, index: number): Promis
 
     if (additionalFields.expiryDays) {
       input.expiry_days = additionalFields.expiryDays;
+    }
+
+    if (additionalFields.shareType) {
+      input.share_type = additionalFields.shareType;
+    }
+
+    if (additionalFields.password) {
+      input.password = additionalFields.password;
     }
 
     const response = await callGraphQLApi.call(ef, shareMeetingMutation, { input });
@@ -38,7 +54,7 @@ export async function shareMeeting(ef: IExecuteFunctions, index: number): Promis
       ef.getNode(),
       error,
       ef.continueOnFail(),
-      'shareMeeting'
+      'shareMeeting',
     );
 
     return {

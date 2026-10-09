@@ -12,7 +12,18 @@ export const transcriptFields: INodeProperties[] = [
     displayOptions: {
       show: {
         resource: ['transcript'],
-        operation: ['getTranscript', 'getTranscriptAnalytics', 'getTranscriptSummary', 'getTranscriptAudioUrl', 'getTranscriptVideoUrl', 'deleteTranscript', 'updateMeetingTitle', 'updateMeetingPrivacy', 'shareMeeting', 'revokeSharedMeetingAccess'],
+        operation: [
+          'getTranscript',
+          'getTranscriptAnalytics',
+          'getTranscriptSummary',
+          'getTranscriptAudioUrl',
+          'getTranscriptVideoUrl',
+          'deleteTranscript',
+          'updateMeetingTitle',
+          'updateMeetingPrivacy',
+          'shareMeeting',
+          'revokeSharedMeetingAccess',
+        ],
       },
     },
     description: 'ID of the transcript to operate on',
@@ -134,9 +145,14 @@ export const transcriptFields: INodeProperties[] = [
       {
         displayName: 'Scope',
         name: 'scope',
-        type: 'string',
-        default: '',
-        description: 'Filter scope',
+        type: 'options',
+        options: [
+          { name: 'All', value: 'all' },
+          { name: 'Sentences', value: 'sentences' },
+          { name: 'Title', value: 'title' },
+        ],
+        default: 'title',
+        description: 'Where Keyword is searched. Requires Keyword.',
       },
       {
         displayName: 'Title',
@@ -187,6 +203,7 @@ export const transcriptFields: INodeProperties[] = [
       { name: 'Link', value: 'link' },
       { name: 'Owner', value: 'owner' },
       { name: 'Participants', value: 'participants' },
+      { name: 'Participating Teammates (Beta)', value: 'participatingteammates' },
       { name: 'Teammates', value: 'teammates' },
       { name: 'Teammates and Participants', value: 'teammatesandparticipants' },
     ],
@@ -273,6 +290,26 @@ export const transcriptFields: INodeProperties[] = [
         ],
         default: 7,
         description: 'Number of days before the shared access expires (must be 7, 14, or 30)',
+      },
+      {
+        displayName: 'Password',
+        name: 'password',
+        type: 'string',
+        typeOptions: { password: true },
+        default: '',
+        description:
+          'Password for a password-protected link (8 to 128 characters). Required when Share Type is Password Link.',
+      },
+      {
+        displayName: 'Share Type',
+        name: 'shareType',
+        type: 'options',
+        options: [
+          { name: 'Email', value: 'EMAIL' },
+          { name: 'Password Link (Beta)', value: 'PASSWORD_LINK' },
+        ],
+        default: 'EMAIL',
+        description: 'Email invites, or a password-protected link (returned as share_slug)',
       },
     ],
   },

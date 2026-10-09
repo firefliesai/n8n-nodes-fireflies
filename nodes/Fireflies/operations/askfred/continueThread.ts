@@ -2,7 +2,10 @@ import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { callGraphQLApi } from '../../transport';
 import { continueAskFredThreadMutation, handleOperationError } from '../../helpers';
 
-export async function continueThread(ef: IExecuteFunctions, index: number): Promise<INodeExecutionData> {
+export async function continueThread(
+  ef: IExecuteFunctions,
+  index: number,
+): Promise<INodeExecutionData> {
   try {
     const threadId = ef.getNodeParameter('threadId', index) as string;
     const query = ef.getNodeParameter('query', index) as string;
@@ -10,6 +13,7 @@ export async function continueThread(ef: IExecuteFunctions, index: number): Prom
     const options = ef.getNodeParameter('options', index, {}) as {
       responseLanguage?: string;
       formatMode?: string;
+      generateSuggestions?: boolean;
     };
 
     const input: Record<string, any> = {
@@ -25,6 +29,10 @@ export async function continueThread(ef: IExecuteFunctions, index: number): Prom
       input.format_mode = options.formatMode;
     }
 
+    if (options.generateSuggestions !== undefined) {
+      input.generate_suggestions = options.generateSuggestions;
+    }
+
     const response = await callGraphQLApi.call(ef, continueAskFredThreadMutation, { input });
 
     return {
@@ -38,7 +46,7 @@ export async function continueThread(ef: IExecuteFunctions, index: number): Prom
       ef.getNode(),
       error,
       ef.continueOnFail(),
-      'continueThread'
+      'continueThread',
     );
 
     return {

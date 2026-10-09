@@ -114,10 +114,11 @@ export const audioFields: INodeProperties[] = [
                 name: 'type',
                 type: 'options',
                 options: [
-                  { name: 'Bearer', value: 'bearer' },
-                  { name: 'Basic', value: 'basic' },
+                  { name: 'Bearer Token', value: 'bearer_token' },
+                  { name: 'Basic Auth', value: 'basic_auth' },
+                  { name: 'None', value: 'none' },
                 ],
-                default: 'bearer',
+                default: 'bearer_token',
                 description: 'Authentication type',
               },
               {
@@ -126,14 +127,14 @@ export const audioFields: INodeProperties[] = [
                 type: 'string',
                 typeOptions: { password: true },
                 default: '',
-                description: 'Bearer token (used when type is Bearer)',
+                description: 'Bearer token (used when type is Bearer Token)',
               },
               {
                 displayName: 'Username',
                 name: 'username',
                 type: 'string',
                 default: '',
-                description: 'Username (used when type is Basic)',
+                description: 'Username (optional, used when type is Basic Auth)',
               },
               {
                 displayName: 'Password',
@@ -141,11 +142,19 @@ export const audioFields: INodeProperties[] = [
                 type: 'string',
                 typeOptions: { password: true },
                 default: '',
-                description: 'Password (used when type is Basic)',
+                description: 'Password (used when type is Basic Auth)',
               },
             ],
           },
         ],
+      },
+      {
+        displayName: 'Meeting Date',
+        name: 'meeting_date',
+        type: 'dateTime',
+        default: '',
+        description:
+          'When the meeting took place (cannot be in the future). Defaults to the upload time.',
       },
       {
         displayName: 'Save Video',
@@ -160,6 +169,93 @@ export const audioFields: INodeProperties[] = [
         type: 'string',
         default: '',
         description: 'URL to receive webhook notifications',
+      },
+    ],
+  },
+  {
+    displayName: 'Input Binary Field',
+    name: 'binaryPropertyName',
+    type: 'string',
+    required: true,
+    default: 'data',
+    displayOptions: {
+      show: {
+        resource: ['audio'],
+        operation: ['uploadFile'],
+      },
+    },
+    description: 'Name of the input binary field holding the audio or video file',
+  },
+  {
+    displayName: 'Additional Fields',
+    name: 'additionalFields',
+    type: 'collection',
+    placeholder: 'Add Field',
+    default: {},
+    displayOptions: {
+      show: {
+        resource: ['audio'],
+        operation: ['uploadFile'],
+      },
+    },
+    options: [
+      {
+        displayName: 'Attendees',
+        name: 'attendees',
+        type: 'fixedCollection',
+        typeOptions: {
+          multipleValues: true,
+        },
+        default: {},
+        options: [
+          {
+            name: 'attendeeValues',
+            displayName: 'Attendee',
+            values: [
+              {
+                displayName: 'Display Name',
+                name: 'displayName',
+                type: 'string',
+                default: '',
+              },
+              {
+                displayName: 'Email',
+                name: 'email',
+                type: 'string',
+                placeholder: 'example@example.com',
+                default: '',
+              },
+              {
+                displayName: 'Phone Number',
+                name: 'phoneNumber',
+                type: 'string',
+                default: '',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        displayName: 'Content Type',
+        name: 'content_type',
+        type: 'string',
+        default: '',
+        placeholder: 'audio/mpeg',
+        description: "MIME type of the file. Defaults to the binary field's MIME type.",
+      },
+      {
+        displayName: 'Custom Language',
+        name: 'custom_language',
+        type: 'string',
+        default: '',
+        description: 'Language code of the meeting, e.g. es or de (max 5 characters)',
+      },
+      {
+        displayName: 'Title',
+        name: 'title',
+        type: 'string',
+        default: '',
+        description: 'Title of the meeting. Defaults to the file name.',
       },
     ],
   },
