@@ -363,6 +363,20 @@ describe('cursor-paginated resources', () => {
     });
   });
 
+  it('fails instead of re-fetching when the cursor does not advance', async () => {
+    const stuck = ok({ auditEvents: { events: [event('1')], has_more: true, next_cursor: 'c1' } });
+    const { ef, requests } = harness({ category: 'AUTHENTICATION', returnAll: true }, [
+      ok({ auditEvents: { events: [event('0')], has_more: true, next_cursor: 'c1' } }),
+      stuck,
+      stuck,
+    ]);
+
+    await expect(run('auditEvent', 'getAuditEvents', ef)).rejects.toThrow(
+      'Pagination cursor did not advance (c1)',
+    );
+    expect(requests).toHaveLength(2);
+  });
+
   it('keeps the pages already fetched when a later page is rate limited', async () => {
     const rateLimited = {
       statusCode: 429,

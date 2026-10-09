@@ -67,6 +67,13 @@ export async function fetchCursorPages<T>(
     if (limitReached || !result.has_more || !result.next_cursor) {
       return { items, has_more: result.has_more, next_cursor: result.next_cursor };
     }
+    if (result.next_cursor === cursor) {
+      // An API that hands back the cursor it was given would loop to MAX_PAGES,
+      // spending rate-limit budget on the same page; fail instead.
+      throw new Error(
+        `Pagination cursor did not advance (${cursor}); the API returned the same page again.`,
+      );
+    }
     cursor = result.next_cursor;
   }
   return { items, has_more: true, next_cursor: cursor ?? null, truncated: true };

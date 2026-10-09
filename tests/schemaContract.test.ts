@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { GraphQLEnumType, buildSchema, parse, validate } from 'graphql';
+import { GraphQLEnumType, Kind, buildSchema, parse, validate } from 'graphql';
 import type { INodeProperties } from 'n8n-workflow';
 
 import * as documents from '../nodes/Fireflies/helpers/queries';
@@ -30,8 +30,13 @@ describe('GraphQL documents vs the public API schema', () => {
   it('covers every query and mutation the API exposes', () => {
     const used = new Set<string>();
     for (const [, text] of graphqlDocuments) {
-      for (const match of text.matchAll(/^\s*(query|mutation)\b[^{]*\{\s*([A-Za-z_]+)/gm)) {
-        used.add(`${match[1]} ${match[2]}`);
+      for (const definition of parse(text).definitions) {
+        if (definition.kind !== Kind.OPERATION_DEFINITION) continue;
+        for (const selection of definition.selectionSet.selections) {
+          if (selection.kind === Kind.FIELD) {
+            used.add(`${definition.operation} ${selection.name.value}`);
+          }
+        }
       }
     }
     const exposed = [
