@@ -8,7 +8,7 @@ import { firefliesNodeProperties } from '../nodes/Fireflies/resources';
 
 /**
  * Contract between the node and the Fireflies public API. The fixture is the
- * public API's schema (introspection of api.fireflies.ai); when the API changes, refresh it
+ * public API's GraphQL schema; when the API changes, refresh it
  * and these tests say what the node has to catch up on.
  */
 const schema = buildSchema(
