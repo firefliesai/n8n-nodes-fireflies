@@ -7,12 +7,14 @@ Run these commands from the repository root:
 
 ```sh
 npm ci
+rm -rf dist
 npm run build
 npm run lint
 npm test
 .github/release-notes/check.sh
 ```
 
+Clean `dist/` first because TypeScript keeps stale files that could make the smoke check pass on old output.
 The build runs TypeScript and Gulp's `build:icons` task. A TypeScript-only build misses the icons.
 There is no `n8n-node-dev` dependency. Generated `dist/` files are ignored; do not commit them.
 Lint is check-only. Do not use the autofix or formatting scripts for verification.
