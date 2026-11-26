@@ -122,7 +122,7 @@ The **Get List** operation under Transcript retrieves a paginated list of meetin
 This is often the first step in a workflow. Iterate over the returned transcript IDs and pass them into:
 
 - **Get** — fetch the full transcript content
-- **Get Summary** — retrieve [summary](https://docs.fireflies.ai/schema/summary) and key takeaways
+- **Get Summary** — retrieve [summary](https://docs.fireflies.ai/schema/summary) and key takeaways. The `shorthand_bullet` field is deprecated: it is no longer generated for new meetings and comes back empty. Use `notes` (free-style notes) instead; the field is still returned so existing workflows keep working
 - **Get Analytics** — access [analytics](https://docs.fireflies.ai/schema/analytics) like sentiment, topic extraction, and more
 
 These operations chain naturally for reporting, insights, or downstream automation.

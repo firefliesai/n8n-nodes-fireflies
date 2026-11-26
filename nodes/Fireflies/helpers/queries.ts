@@ -79,6 +79,8 @@ export const getTranscriptsListQuery = `
   }
 `;
 
+// `summary.shorthand_bullet` is deprecated: Fireflies no longer generates it for new meetings, so it comes back empty.
+// It stays selected so existing workflows keep their output shape. Use `summary.notes` (free-style notes) instead.
 export const getTranscriptSummaryQuery = `
   query GetTranscriptSummary($transcriptId: String!) {
     transcript(id: $transcriptId) {
@@ -139,6 +141,7 @@ export const getTranscriptAnalyticsQuery = `
   }
 `;
 
+// `summary.shorthand_bullet` is deprecated (empty for new meetings); see getTranscriptSummaryQuery. Use `summary.notes` instead.
 export const getTranscriptQuery = `
   query Transcript($transcriptId: String!) {
     transcript(id: $transcriptId) {
