@@ -170,7 +170,7 @@ describe('getRateLimitInfo', () => {
     expect(info?.retryAfterSeconds).toBe(60);
   });
 
-  it('still recognises the NodeApiError n8n builds from an axios 429 (body only, no headers)', () => {
+  it('recognises the NodeApiError n8n builds from an axios 429 and reads Retry-After from cause headers', () => {
     const axiosLike = Object.assign(new Error('Request failed with status code 429'), {
       isAxiosError: true,
       response: { status: 429, headers: { 'retry-after': '99' }, data: rateLimitBody(NOW + 7_000) },
@@ -179,7 +179,18 @@ describe('getRateLimitInfo', () => {
 
     const info = getRateLimitInfo(wrapped, NOW);
 
-    // n8n drops the cause (and its headers); the body's retryAfter still gives the wait.
+    expect(wrapped.httpCode).toBe('429');
+    expect(info?.retryAfterSeconds).toBe(99);
+  });
+
+  it('falls back to body retryAfter when NodeApiError has no headers', () => {
+    const wrapped = new NodeApiError(node, {
+      isAxiosError: true,
+      response: { status: 429, headers: {}, data: rateLimitBody(NOW + 7_000) },
+    });
+
+    const info = getRateLimitInfo(wrapped, NOW);
+
     expect(wrapped.httpCode).toBe('429');
     expect(info?.retryAfterSeconds).toBe(7);
   });
