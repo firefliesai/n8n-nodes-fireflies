@@ -77,7 +77,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          node-version: 26.13.1
 
       - name: Install dependencies
         run: npm ci
@@ -116,12 +116,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          node-version: 26.13.1
           registry-url: https://registry.npmjs.org
-
-      # Trusted publishing (OIDC) requires npm >= 11.5; pinned exact version
-      - name: Update npm
-        run: npm install -g npm@11.6.2
 
       # Another run for the same version may have published since the check
       - name: Check npm again

@@ -2,7 +2,7 @@
 
 ## Install and verify
 
-Use Node.js 22 and npm, matching CI. Use `package-lock.json` for installs, not the older `pnpm-lock.yaml`.
+Use Node.js 26.13.1 and npm, matching CI. Use `package-lock.json` for installs, not the older `pnpm-lock.yaml`.
 Run these commands from the repository root:
 
 ```sh
